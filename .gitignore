@@ -27,3 +27,4 @@ build/Release
 node_modules
 ~$search ( Phone Messaging ).docx
 *.tmp
+~$search.docx
