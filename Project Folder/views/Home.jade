@@ -1,0 +1,12 @@
+extends BaseLayout
+
+block content
+    div(class="content")
+        h2
+            |This is the homepage!
+        br
+        - if (typeof(message) !== 'undefined'){
+            | #{message}
+        -}else{
+            | No message was found.
+        -}
