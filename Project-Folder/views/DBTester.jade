@@ -1,0 +1,17 @@
+extends BaseLayout
+
+block content
+    div(class="content")
+        h2
+            |This is the post testing page!
+        form(method='POST', action='/DBTest')
+            label(for='title') Title:
+            input(name='title', id='title')
+            br
+            label(for='message') Message:
+            input(name='message', id='message')
+            br
+            label(for='index') Index:
+            input(name='index', type='number', id='index')
+            br
+            input(type='submit', value='Save to DB!')

@@ -2,6 +2,8 @@ var express = require('express'),
     jade = require('jade'),
     path = require('path');
 
+var persist = require('./persist.js');
+
 var bodyParser = require('body-parser');
 var app = express();
 
@@ -26,6 +28,15 @@ app.get('/postTest', superInterceptor, function (req, res){
     res.render('PostTester.jade');
 });
 
+app.get('/DBTest', superInterceptor, function (req, res){
+    res.render('DBTester.jade');
+});
+
+app.get('/testList', superInterceptor, function (req, res){
+    persist.printAllTests();
+    res.render('Home');
+});
+
 app.get('/:viewname', superInterceptor, function (req, res){
     res.locals.message = 'Error: No route for this path.';
     res.render('Error');
@@ -38,6 +49,12 @@ app.get('/', superInterceptor, function (req, res){
 
 app.post('/postTest', superInterceptor, function (req, res){
     res.locals.message = req.body.message;
+    res.render('Home');
+});
+
+app.post('/DBTest', superInterceptor, function (req, res){
+    persist.addTest(req.body.title, req.body.message, req.body.index);
+    persist.printAllTests();
     res.render('Home');
 });
 
