@@ -2,7 +2,7 @@ var express = require('express'),
     jade = require('jade'),
     path = require('path');
 
-var persist = require('./persist.js');
+var persist = require('./Controllers/persist.js');
 
 var bodyParser = require('body-parser');
 var app = express();
