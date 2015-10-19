@@ -13,7 +13,10 @@ var testSchema = mongoose.Schema({
 });
 var Test = mongoose.model('Test', testSchema);
 
-
+var Account = require('./Schema/Account.js');
+var Notification = require('./Schema/Notification.js');
+var Message = require('./Schema/Message.js');
+var Group = require('./Schema/Group.js');
 
 exports.addTest = function (title, message, index) {
     var newTest = new Test({

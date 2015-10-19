@@ -1,6 +1,6 @@
 var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
-    ObjectId = Schema.objectId;
+    ObjectId = Schema.ObjectId;
 
 var NotificationSchema = new Schema({
     owner: ObjectId,
