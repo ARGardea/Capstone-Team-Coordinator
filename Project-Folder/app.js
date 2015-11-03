@@ -115,7 +115,18 @@ app.get('/CreateNotification', accessInterceptor, function (req, res) {
     res.render('CreateNotification');
 });
 
+app.get('/SendNote', accessInterceptor, function (req, res) {
+    if(req.query.targetID){
+        res.render('SendNote');    
+    }else{
+        res.locals.message='No recipient specified';
+        res.render('Error');
+    }
+    
+});
 
+app.get('/ReplyNote', accessInterceptor, function (req, res) {
+});
 
 app.get('/ListNotifications', accessInterceptor, function (req, res) {
     persist.performUserAction(req.session.username, function (err, user) {
