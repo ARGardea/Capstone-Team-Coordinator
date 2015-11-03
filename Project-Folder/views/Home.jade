@@ -2,13 +2,12 @@ extends BaseLayout
 
 block content
     link(href='/styles/Homepage.css', rel='stylesheet')
-    div(class="content")
-        div(class="main")
-            h2
-                |This is the homepage!
-            br
-            - if (typeof(message) !== 'undefined'){
-                | #{message}
-            -}else{
-                | No message was found.
-            -}
+    div(class="main")
+        h2
+            |This is the homepage!
+        br
+        - if (typeof(message) !== 'undefined'){
+            | #{message}
+        -}else{
+            | No message was found.
+        -}

@@ -7,7 +7,8 @@ var NotificationSchema = new Schema({
     message: String,
     date: Date,
     sendToPhone: Boolean,
-    forGroup: Boolean
+    forGroup: Boolean,
+    sent: Boolean
 });
 
 exports.notification = mongoose.model('Notification', NotificationSchema);

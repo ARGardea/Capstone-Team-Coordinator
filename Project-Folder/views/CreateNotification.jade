@@ -1,0 +1,16 @@
+extends BaseLayout
+
+block content
+    div(class='main')
+        form(method='POST', action='/CreateNotification')
+            label(for='dateTime') Date and Time:
+            input(type='datetime-local', name='dateTime', id='dateTime')
+            br
+            label(for='message') Message:
+            input(id='message', name='message')
+            br
+            label(for='sendToPhone') Send to Phone?
+            input(type="checkbox", name='sendToPhone', id='sendToPhone')
+            br
+            input(type='submit', value='Create Notification')
+            

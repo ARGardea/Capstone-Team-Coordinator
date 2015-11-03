@@ -1,0 +1,14 @@
+extends BaseLayout
+
+block content
+    div(class="main")
+        h2
+            |This is the login page!
+        form(method='POST', action='/Login')
+            label(for='username') Username:
+            input(name='username', id='username')
+            br
+            label(for='password') Password:
+            input(name='password', id='password', type='password')
+            br
+            input(type='submit', value='Log in')

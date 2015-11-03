@@ -1,0 +1,20 @@
+extends BaseLayout
+
+block content
+    div(class="main")
+        h2
+            |This is the account creation page!
+        form(method='POST', action='/Signup')
+            label(for='username') Username:
+            input(name='username', id='username')
+            br
+            label(for='password') Password:
+            input(name='password', id='password', type='password')
+            br
+            label(for='email') Email:
+            input(name='email', id='email')
+            br
+            label(for='phoneNumber') Phone Number:
+            input(name='phoneNumber', id='phoneNumber')
+            br
+            input(type='submit', value='Register')

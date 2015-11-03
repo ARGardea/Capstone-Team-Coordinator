@@ -1,0 +1,16 @@
+extends BaseLayout
+
+block content
+    div(class='main')
+        form(method='POST', action='/EditProfile')
+            label(for='birthdate') Birth Date:
+            input(name='birthdate', id='birthdate', type='date', value='#{user.birthdate}')
+            br
+            label(for='location') Location:
+            input(name='location', id='location', value='#{user.location}')
+            br
+            label(for='description') Description:
+            textarea(name='description', id='description', cols='40', rows='5')
+                |#{user.description}
+            br
+            input(type='submit', value='Edit Profile')

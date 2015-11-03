@@ -13,12 +13,10 @@ body{
 }
 
 header{
-    margin-left: auto;
-    margin-right: auto;
-    width: 80%;
     text-align: center;
     max-height: 80px;
     min-height: 80px;
+    border-bottom: 5px solid rgb(170, 157, 141);
 }
 
 header > h1{
@@ -26,25 +24,36 @@ header > h1{
 }
 
 div.content {
-    margin-left: auto;
-    margin-right: auto;
-    width: 80%;
-    max-width: 900px;
     background-color: rgb(226, 210, 190);
     flex: 1;
-    border: 5px solid rgb(170, 157, 141);
-    border-bottom-color: rgb(206, 188, 171);
-    border-right-color: rgb(206, 188, 171);
-    border-radius: 10px;
-    margin-bottom: 5%;
 }
 
 div.main {
     margin-left: 5%;
     margin-right: 5%;
-    margin-top: 5%;
+    margin-top: 40px;
 }
 
 div.main > h2 {
     margin: 0px;
+}
+
+ul.headerMenu {
+    list-style-type: none;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0px;
+}
+
+ul.headerMenu > li {
+    display: inline;
+}
+
+ul.headerMenu > li > a:hover {
+}
+
+ul.headerMenu > li > a {
+    font-size: 22px;
+    text-decoration: none;
+    padding: 0px 10px;
 }

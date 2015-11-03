@@ -1,4 +1,0 @@
-esports.getAuthorizer = function () {
-    return {
-    };
-}

@@ -6,8 +6,11 @@ var AccountSchema = new Schema({
     username: String,
     password: String,
     email: String,
-    phoneNumber: String,
+    phoneNumber: Number,
     role: Number,
+    description: String,
+    birthdate: Date,
+    location: String,
     notifications: [ObjectId]
 });
 
