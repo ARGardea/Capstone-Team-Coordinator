@@ -1,0 +1,26 @@
+html
+    head
+        title Team Coordinator
+        link(href='/styles/Layout.css', rel='stylesheet')
+        link(href='https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz', rel='stylesheet')
+        
+    body
+        header
+            h1
+                |Team Coordinator
+        
+        div(class="content")
+            ul(class="headerMenu")
+                li
+                    a(href='/') Home
+                -if(typeof(username) !== 'undefined'){
+                li
+                    a(href='/Logout') Log Out
+                -}else{
+                li
+                    a(href='/Login') Log In
+                li
+                    a(href='/Signup') Sign Up
+                -}
+            
+            block content

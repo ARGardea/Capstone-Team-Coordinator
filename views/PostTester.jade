@@ -1,0 +1,11 @@
+extends BaseLayout
+
+block content
+    div(class="main")
+        h2
+            |This is the post testing page!
+        form(method='POST', action='/postTest')
+            label(for='message') Message: 
+            input(name='message', id='message')
+            br
+            input(type='submit', value='Send Message!')
