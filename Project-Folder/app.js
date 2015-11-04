@@ -229,7 +229,8 @@ app.post('/', superInterceptor, function (req, res) {
     res.render('Home');
 });
 
-app.listen(3000);
+var theport = process.env.PORT || 3000;
+app.listen(theport);
 
 
 function checkNotifications() {
