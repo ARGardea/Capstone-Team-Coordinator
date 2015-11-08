@@ -15,7 +15,7 @@ exports.getAuthorizer = function () {
                     console.log('Account already registered');
                 } else {
                     console.log('Account registered: ' + username);
-                    console.log(this)
+                    console.log(this);
                     this.authorizer.persist.addUser(username, password, email, phoneNumber, role);
                 }
             });
