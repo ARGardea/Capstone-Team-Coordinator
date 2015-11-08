@@ -259,4 +259,4 @@ function checkNotifications() {
 //    console.log("ping pong pingeddy pong");
 //}
 //
-setInterval(checkNotifications, 1000);
+//setInterval(checkNotifications, 1000);

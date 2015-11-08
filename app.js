@@ -12,6 +12,7 @@ authorizer.registerUser('admin', 'password', '123@1234.net', 1234567, authorizer
 
 var bodyParser = require('body-parser');
 var app = express();
+app.set('port', (process.env.PORT || 5000));
 
 app.use(bodyParser.urlencoded({
     extended: false
@@ -116,17 +117,16 @@ app.get('/CreateNotification', accessInterceptor, function (req, res) {
 });
 
 app.get('/SendNote', accessInterceptor, function (req, res) {
-    if(req.query.targetID){
-        res.render('SendNote');    
-    }else{
-        res.locals.message='No recipient specified';
+    if (req.query.targetID) {
+        res.render('SendNote');
+    } else {
+        res.locals.message = 'No recipient specified';
         res.render('Error');
     }
-    
+
 });
 
-app.get('/ReplyNote', accessInterceptor, function (req, res) {
-});
+app.get('/ReplyNote', accessInterceptor, function (req, res) {});
 
 app.get('/ListNotifications', accessInterceptor, function (req, res) {
     persist.performUserAction(req.session.username, function (err, user) {
@@ -229,7 +229,9 @@ app.post('/', superInterceptor, function (req, res) {
     res.render('Home');
 });
 
-app.listen(3000);
+app.listen(app.get('port'), function () {
+    console.log('Node app is running on port', app.get('port'));
+});
 
 
 function checkNotifications() {
@@ -257,4 +259,4 @@ function checkNotifications() {
 //    console.log("ping pong pingeddy pong");
 //}
 //
-setInterval(checkNotifications, 1000);
+//setInterval(checkNotifications, 1000);
