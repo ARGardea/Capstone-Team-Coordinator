@@ -10,12 +10,13 @@ exports.getAuthorizer = function () {
             this.persist = persist;
         },
         registerUser: function (username, password, email, phoneNumber, role) {
+            persist = this.persist;
             this.persist.performUserAction(username, function (err, user) {
                 if (user) {
                     console.log('Account already registered');
                 } else {
                     console.log('Account registered: ' + username);
-                    this.authorizer.persist.addUser(username, password, email, phoneNumber, role);
+                    persist.addUser(username, password, email, phoneNumber, role);
                 }
             });
         },
