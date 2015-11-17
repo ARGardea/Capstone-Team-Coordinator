@@ -2,6 +2,9 @@ extends BaseLayout
 
 block content
     div(class='main')
+        a(href='/CreateNotification') Create a New Notification
+        br
+        br
         -if(typeof(list) !== 'undefined'){
             each item in list
                 |Date: #{item.date}

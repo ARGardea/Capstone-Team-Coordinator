@@ -9,6 +9,7 @@ var MessageSchema = new Schema({
     postTime: Date,
     isPrivate: Boolean,
     replies: [ObjectId],
+    subject: String,
     text: String
 });
 

@@ -4,11 +4,21 @@ var express = require('express'),
     expressSession = require('express-session');
 
 var persist = require('./Controllers/persist.js');
+var phone = require('./Controllers/phone.js');
 var auth = require('./Controllers/auth.js');
 authorizer = auth.getAuthorizer();
 authorizer.init(persist);
 
+phone.sendMessage('+12099548558', 'HELLO', function (error, message) {
+    if (error) {
+        console.error('ERROR');
+    }else {
+        console.log('Sent! id: ' + message.sid);
+    }
+});
+
 authorizer.registerUser('admin', 'password', '123@1234.net', 1234567, authorizer.roles.ADMIN);
+authorizer.registerUser('mod', 'password', '123@1234.net', 1234567, authorizer.roles.MOD);
 
 var bodyParser = require('body-parser');
 var app = express();
@@ -117,7 +127,8 @@ app.get('/CreateNotification', accessInterceptor, function (req, res) {
 });
 
 app.get('/SendNote', accessInterceptor, function (req, res) {
-    if (req.query.targetID) {
+    if (req.query.targetUsername) {
+        res.locals.recieverName = req.query.targetUsername;
         res.render('SendNote');
     } else {
         res.locals.message = 'No recipient specified';
@@ -220,8 +231,49 @@ app.post('/CreateNotification', accessInterceptor, function (req, res) {
     });
 });
 
+app.post('/SendNote', accessInterceptor, function (req, res) {
+    console.log('got note message!');
+    var paramObject = {
+        sender: null,
+        reciever: null,
+        postTime: new Date(),
+        isPrivate: true,
+        subject: req.body.subject,
+        text: req.body.message
+    };
+
+    persist.performUserAction(req.session.username, function (err, user) {
+        if (user) {
+            paramObject.sender = user._id;
+            persist.performUserAction(req.body.reciever, function (err, reciever) {
+                if (reciever) {
+                    paramObject.reciever = reciever._id;
+                    persist.addMessage(paramObject, function () {
+                        res.render('/Home');
+                    });
+                } else {
+                    console.log('No reciever found!');
+                }
+            });
+        } else {
+            console.log('No user found!')
+        }
+    });
+
+});
+
 app.post('/Login', superInterceptor, function (req, res) {
     authorizer.loginUser(req.body.username, req.body.password, req, res);
+});
+
+app.post('/Twilio', superInterceptor, function (req, res) {
+    var twiml = new twilio.TwimlResponse();
+    console.log(req.body.Body);
+    res.writeHead(200, {
+        'Content-Type': 'text/xml'
+    });
+    twiml.message('Message recieved!');
+    res.end(twiml.toString());
 });
 
 app.post('/', superInterceptor, function (req, res) {

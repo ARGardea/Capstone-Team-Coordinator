@@ -5,7 +5,7 @@ block content
         form(method='POST', action='/SendNote')
             label(for='reciever') Reciever:
             | #{recieverName}
-            input(name='reciever', type='hidden', value='#{reciever}')
+            input(name='reciever', type='hidden', value='#{recieverName}')
             br
             label(for='subject') Subject:
             -if(typeof(subject) !== 'undefined'){

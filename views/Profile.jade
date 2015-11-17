@@ -2,6 +2,11 @@ extends BaseLayout
 
 block content
     div(class="main")
+        -if (username == user.username){
+        a(href='/EditProfile') Edit Profile
+        br
+        -}
+        
         span(class="username")
             |#{user.username}
         br

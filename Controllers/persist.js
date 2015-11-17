@@ -31,6 +31,7 @@ var Account = AccountSchema.account;
 var NotificationSchema = require('./Schema/Notification.js');
 var Notification = NotificationSchema.notification;
 var MessageSchema = require('./Schema/Message.js');
+var Message = MessageSchema.message;
 var GroupSchema = require('./Schema/Group.js');
 
 exports.addTest = function (title, message, index) {
@@ -82,6 +83,23 @@ exports.addNotification = function (username, dateTime, message, sendToPhone, fo
             user.notifications.push(newNotification._id);
             user.save(finalFunction);
         });
+    });
+};
+
+exports.addMessage = function (paramObject, action){
+    var newMessage = new Message({
+        parent: paramObject.parent || null,
+        sender: paramObject.sender,
+        reciever: paramObject.reciever,
+        postTime: paramObject.postTime,
+        isPrivate: paramObject.isPrivate,
+        replies: [],
+        subject: paramObject.subject,
+        text: paramObject.text
+    });
+    newMessage.save(function (err, newMessage) {
+        console.log(newMessage._id + ' saved to database.');
+        action();
     });
 };
 

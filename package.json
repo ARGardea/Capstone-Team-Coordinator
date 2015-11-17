@@ -12,7 +12,8 @@
     "path": "0.12.7",
     "express-session": "1.12.1",
     "body-parser": "1.14.1",
-    "mongoose": "4.2.4"
+    "mongoose": "4.2.4",
+    "twilio": "2.5.2"
   },
   "engines": {
     "node": "0.12.7"
