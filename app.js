@@ -267,13 +267,7 @@ app.post('/Login', superInterceptor, function (req, res) {
 });
 
 app.post('/Twilio', superInterceptor, function (req, res) {
-    var twiml = new phone.TwimlResponse();
-    console.log(req.body.Body);
-    res.writeHead(200, {
-        'Content-Type': 'text/xml'
-    });
-    twiml.message('Message recieved!');
-    res.end(twiml.toString());
+    phone.handleIncoming(req, res);
 });
 
 app.post('/', superInterceptor, function (req, res) {

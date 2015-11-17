@@ -23,3 +23,13 @@ exports.sendMessage = function (targetNumber, message, callback) {
         body: message
     }, callback);
 };
+
+exports.handleIncoming = function (req, res) {
+    var twiml = new client.TwimlResponse();
+    console.log(req.body.Body);
+    res.writeHead(200, {
+        'Content-Type': 'text/xml'
+    });
+    twiml.message('Message recieved!');
+    res.end(twiml.toString());
+};
