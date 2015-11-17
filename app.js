@@ -267,7 +267,7 @@ app.post('/Login', superInterceptor, function (req, res) {
 });
 
 app.post('/Twilio', superInterceptor, function (req, res) {
-    var twiml = new twilio.TwimlResponse();
+    var twiml = new phone.TwimlResponse();
     console.log(req.body.Body);
     res.writeHead(200, {
         'Content-Type': 'text/xml'
