@@ -9,13 +9,20 @@ var auth = require('./Controllers/auth.js');
 authorizer = auth.getAuthorizer();
 authorizer.init(persist);
 
-phone.sendMessage('+12099548558', 'HELLO', function (error, message) {
-    if (error) {
-        console.error('ERROR');
-    }else {
-        console.log('Sent! id: ' + message.sid);
-    }
-});
+//phone.sendMessage('+12099548558', 'HELLO', function (error, message) {
+//    if (error) {
+//        console.error('ERROR');
+//    } else {
+//        console.log('Sent! id: ' + message.sid);
+//        persist.addMessage({
+//            phoneNumber: '+12099548558',
+//            message: 'HELLO',
+//            incoming: false
+//        }, function () {
+//            console.log('message saved');
+//        })
+//    }
+//});
 
 authorizer.registerUser('admin', 'password', '123@1234.net', 1234567, authorizer.roles.ADMIN);
 authorizer.registerUser('mod', 'password', '123@1234.net', 1234567, authorizer.roles.MOD);
@@ -267,7 +274,13 @@ app.post('/Login', superInterceptor, function (req, res) {
 });
 
 app.post('/Twilio', superInterceptor, function (req, res) {
-    phone.handleIncoming(req, res);
+    phone.handleIncoming(req, res, function () {
+        persist.addTextMessage({
+            phoneNumber: req.body.From,
+            message: req.body.Body,
+            incoming: true
+        });
+    });
 });
 
 app.post('/', superInterceptor, function (req, res) {

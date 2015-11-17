@@ -24,7 +24,8 @@ exports.sendMessage = function (targetNumber, message, callback) {
     }, callback);
 };
 
-exports.handleIncoming = function (req, res) {
+exports.handleIncoming = function (req, res, callback) {
     console.log(req.body);
     console.log(req.body.Body);
+    callback();
 };

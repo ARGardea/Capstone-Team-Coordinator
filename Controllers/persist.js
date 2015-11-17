@@ -33,6 +33,8 @@ var Notification = NotificationSchema.notification;
 var MessageSchema = require('./Schema/Message.js');
 var Message = MessageSchema.message;
 var GroupSchema = require('./Schema/Group.js');
+var textSchema = require('./Schema/Text.js');
+var TextMessage = textSchema.textMessage;
 
 exports.addTest = function (title, message, index) {
     var newTest = new Test({
@@ -101,6 +103,17 @@ exports.addMessage = function (paramObject, action){
         console.log(newMessage._id + ' saved to database.');
         action();
     });
+};
+
+exports.addTextMessage = function (paramObject, finalAction) {
+    var newText = new TextMessage({
+        phoneNumber: paramObject.phoneNumber,
+        message: paramObject.message,
+        incoming: paramObject.incoming
+    });
+    newText.save(function (err, newText) {
+        console.log('Text Message ' + newText._id + ' saved to database.');
+    })
 };
 
 exports.performNotificationAction = function (id, action) {
