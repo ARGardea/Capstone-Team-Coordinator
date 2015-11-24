@@ -5,26 +5,22 @@ var express = require('express'),
 
 var persist = require('./Controllers/persist.js');
 var phone = require('./Controllers/phone.js');
+phone.setPersist(persist);
 var auth = require('./Controllers/auth.js');
 authorizer = auth.getAuthorizer();
-authorizer.init(persist);
+authorizer.init(persist, phone);
 
 //phone.sendMessage('+12099548558', 'HELLO', function (error, message) {
 //    if (error) {
 //        console.error('ERROR');
 //    } else {
 //        console.log('Sent! id: ' + message.sid);
-//        persist.addMessage({
-//            phoneNumber: '+12099548558',
-//            message: 'HELLO',
-//            incoming: false
-//        }, function () {
-//            console.log('message saved');
-//        })
 //    }
 //});
 
-authorizer.registerUser('admin', 'password', '123@1234.net', 1234567, authorizer.roles.ADMIN);
+authorizer.registerUser('admin', 'password', 'AlexRogerG@gmail.net', 12099548558, authorizer.roles.ADMIN, function () {
+
+});
 authorizer.registerUser('mod', 'password', '123@1234.net', 1234567, authorizer.roles.MOD);
 
 var bodyParser = require('body-parser');
@@ -69,9 +65,13 @@ var loadUser = function (req, res) {
 };
 
 var unloadUser = function (req, res) {
-    req.session.username = null;
-    req.session.userID = null;
-    req.session.userRole = null;
+    delete req.session.username;
+    delete req.session.userID;
+    delete req.session.userRole;
+
+    delete res.locals.username;
+    delete res.locals.userID;
+    delete res.locals.userRole;
 };
 
 app.get('/getTest', accessInterceptor, function (req, res) {
@@ -146,6 +146,21 @@ app.get('/SendNote', accessInterceptor, function (req, res) {
 
 app.get('/ReplyNote', accessInterceptor, function (req, res) {});
 
+app.get('/ViewNotes', accessInterceptor, function (req, res) {
+    persist.performUserAction(req.session.username, function (err, user) {
+        if (user) {
+            persist.performUserNotesAction(user._id, function (docs) {
+                var list = [];
+                for (var i = 0; i < docs.length; i++) {
+                    list.push(docs[i].toObject());
+                }
+                res.locals.list = list;
+                res.render('ListMessages');
+            });
+        }
+    });
+});
+
 app.get('/ListNotifications', accessInterceptor, function (req, res) {
     persist.performUserAction(req.session.username, function (err, user) {
         if (user) {
@@ -174,7 +189,39 @@ app.get('/ListNotifications', accessInterceptor, function (req, res) {
 
         }
     });
-})
+});
+
+app.get('/AddContact', accessInterceptor, function (req, res) {
+    persist.performUserAction(req.query.targetUsername, function (err, user) {
+        if (user) {
+            persist.addRequest({
+                sender: req.session.UserID,
+                reciever: user._id
+            }, function (err, request) {
+                if (err) {
+                    console.error(err);
+                } else {
+                    console.log('Request saved! ' + request._id);
+                }
+            });
+        } else {
+            res.locals.message = 'Error: user ' + req.query.targetUsername + ' not found.';
+            res.render('Error');
+        }
+    });
+});
+
+app.get('/ConfirmRequest', accessInterceptor, function (req, res) {
+
+});
+
+app.get('/DenyRequest', accessInterceptor, function (req, res) {
+
+});
+
+app.get('/ViewContactRequests', accessInterceptor, function (req, res) {
+
+});
 
 app.get('/:viewname', superInterceptor, function (req, res) {
     res.locals.message = 'Error: No route for this path.';
@@ -256,7 +303,8 @@ app.post('/SendNote', accessInterceptor, function (req, res) {
                 if (reciever) {
                     paramObject.reciever = reciever._id;
                     persist.addMessage(paramObject, function () {
-                        res.render('/Home');
+                        phone.sendMessage(reciever.phoneNumber, paramObject.text, function () {});
+                        res.render('Home');
                     });
                 } else {
                     console.log('No reciever found!');

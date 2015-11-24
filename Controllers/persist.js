@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 
-var uristring = 
+var uristring =
     process.env.MONGOLAB_URI ||
     'mongodb://localhost/data';
 
@@ -8,8 +8,8 @@ console.log("TRYING WITH: " + uristring);
 
 mongoose.connect(uristring, function (err, res) {
     if (err) {
-        console.log('ERROR connecting to : ' + uristring + '. ' + err);    
-    }else{
+        console.log('ERROR connecting to : ' + uristring + '. ' + err);
+    } else {
         console.log('Succeeded connected to: ' + uristring);
     }
 });
@@ -35,6 +35,10 @@ var Message = MessageSchema.message;
 var GroupSchema = require('./Schema/Group.js');
 var textSchema = require('./Schema/Text.js');
 var TextMessage = textSchema.textMessage;
+var settingSchema = require('./Schema/Settings.js');
+var Settings = settingSchema.settings;
+var requestSchema = require('./Schema/ContactRequest.js');
+var Request = requestSchema.request;
 
 exports.addTest = function (title, message, index) {
     var newTest = new Test({
@@ -88,7 +92,7 @@ exports.addNotification = function (username, dateTime, message, sendToPhone, fo
     });
 };
 
-exports.addMessage = function (paramObject, action){
+exports.addMessage = function (paramObject, action) {
     var newMessage = new Message({
         parent: paramObject.parent || null,
         sender: paramObject.sender,
@@ -113,7 +117,18 @@ exports.addTextMessage = function (paramObject, finalAction) {
     });
     newText.save(function (err, newText) {
         console.log('Text Message ' + newText._id + ' saved to database.');
+        finalAction();
     })
+};
+
+exports.addRequest = function (paramObject, finalAction) {
+    var newRequest = new Request({
+        sender: paramObject.sender,
+        reciever: paramObject.reciever,
+        confirmed: false,
+        rejected: false
+    });
+    newRequest.save(finalAction);
 };
 
 exports.performNotificationAction = function (id, action) {
@@ -135,13 +150,21 @@ exports.getUser = function (username) {
     });
     console.log('found: ' + user.username);
     return user;
-}
+};
+
+exports.performUserNotesAction = function (userID, callback) {
+    Message.find({
+        reciever: userID
+    }, function (err, docs) {
+        callback(docs);
+    });
+};
 
 exports.performUserAction = function (username, action) {
     Account.findOne({
         username: username
     }, action);
-}
+};
 
 exports.printAllAccounts = function () {
     Account.find({}, function (err, docs) {

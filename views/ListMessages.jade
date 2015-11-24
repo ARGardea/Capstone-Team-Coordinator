@@ -1,0 +1,11 @@
+extends BaseLayout
+
+block content
+    div(class='main')
+        -if(typeof(list) !== 'undefined'){
+            each item in list
+                |Sender: #{item.sender}
+                |Subject: #{item.subject}
+                |Message: #{item.text}
+                br
+        -}

@@ -11,7 +11,9 @@ var AccountSchema = new Schema({
     description: String,
     birthdate: Date,
     location: String,
-    notifications: [ObjectId]
+    notifications: [ObjectId],
+    contacts: [ObjectId],
+    settings: [ObjectId]
 });
 
 exports.roles = {

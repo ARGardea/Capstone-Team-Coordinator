@@ -5,6 +5,9 @@ block content
         -if (username == user.username){
         a(href='/EditProfile') Edit Profile
         br
+        -}else{
+        a(href='/SendNote?targetUsername=#{user.username}') Send Note
+        br
         -}
         
         span(class="username")

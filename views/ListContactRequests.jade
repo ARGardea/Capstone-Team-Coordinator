@@ -1,0 +1,11 @@
+extends BaseLayout
+
+block content
+    div(class='main')
+        -if(typeof(list) !== 'undefined') {
+            each item in list
+                |Sender: #{item.sender}
+                br
+                a(href='/ConfirmRequest?requestID=#{item._id}') Accept Request
+                a(href='/DenyRequest?requestID=#{item._id}') Deny Request
+        -}
