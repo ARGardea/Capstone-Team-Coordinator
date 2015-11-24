@@ -303,7 +303,7 @@ app.post('/SendNote', accessInterceptor, function (req, res) {
                 if (reciever) {
                     paramObject.reciever = reciever._id;
                     persist.addMessage(paramObject, function () {
-                        phone.sendMessage(reciever.phoneNumber, paramObject.text, function () {});
+                        phone.sendMessage(reciever.phoneNumber, "Sender: " + req.session.username + " - Subject: " + paramObject.subject + " - Message: " + paramObject.text, function () {});
                         res.render('Home');
                     });
                 } else {
