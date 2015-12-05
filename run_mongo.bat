@@ -1,1 +1,1 @@
-C:\mongodb\bin\mongod --dbpath C:\Users\agardea\Documents\Capstone\CapStuff\Capstone-Team-Coordinator\data
+C:\mongodb\bin\mongod --dbpath C:\Users\agardea\Documents\Capstone\Capstone-Team-Coordinator\data
