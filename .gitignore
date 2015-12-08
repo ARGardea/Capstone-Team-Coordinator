@@ -29,6 +29,10 @@ node_modules
 *.tmp
 ~$search.docx
 ~$chnicalOutline.docx
-/data/**
+data/*
 *.ns
 data/mongod.lock
+data/data.0
+data/data.ns
+*.0
+data/local.ns
