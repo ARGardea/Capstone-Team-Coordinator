@@ -379,12 +379,18 @@ app.post('/Login', superInterceptor, function (req, res) {
     authorizer.loginUser(req.body.username, req.body.password, req, res);
 });
 
-app.post('/Twilio', superInterceptor, function (req, res) {
+app.post('/twilio', superInterceptor, function (req, res) {
     phone.handleIncoming(req, res, function () {
         persist.addTextMessage({
             phoneNumber: req.body.From,
             message: req.body.Body,
             incoming: true
+        }, function(err, message){
+            if(err){
+                console.error(err);
+            }else{
+                console.log(message._id + ' was saved to the database!');
+            }
         });
     });
 });

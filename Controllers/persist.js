@@ -116,10 +116,7 @@ exports.addTextMessage = function (paramObject, finalAction) {
         message: paramObject.message,
         incoming: paramObject.incoming
     });
-    newText.save(function (err, newText) {
-        console.log('Text Message ' + newText._id + ' saved to database.');
-        finalAction();
-    })
+    newText.save(finalAction);
 };
 
 exports.addRequest = function (paramObject, finalAction) {
