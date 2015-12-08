@@ -65,7 +65,8 @@ exports.addUser = function (username, password, email, phoneNumber, role) {
         password: password,
         email: email,
         phoneNumber: phoneNumber,
-        role: role
+        role: role,
+        contacts: []
     });
     newUser.save(function (err, newUser) {
         if (err) return console.error(err);
@@ -131,6 +132,109 @@ exports.addRequest = function (paramObject, finalAction) {
     newRequest.save(finalAction);
 };
 
+var requestExistsGate = function (paramObject, action) {
+    Request.findOne(paramObject, action);
+};
+
+exports.requestExistsGate = requestExistsGate;
+
+exports.requestListAction = function (paramObject, finalAction) {
+    Request.find(paramObject, finalAction);
+}
+
+exports.addCheckedRequest = function (paramObject, finalAction) {
+    requestExistsGate({
+        sender: paramObject.sender,
+        reciever: paramObject.reciever
+    }, function (err, request) {
+        if (request) {
+            finalAction("A request from " + request.sender + " to " + request.reciever + " has already been made.");
+        } else {
+            var newRequest = new Request({
+                sender: paramObject.sender,
+                reciever: paramObject.reciever,
+                confirmed: false,
+                rejected: false
+            });
+            newRequest.save(finalAction);
+        }
+    })
+};
+
+exports.confirmRequest = function (paramObject, finalAction) {
+    Request.findOne(paramObject, function (err, request) {
+        if (err) {
+            console.error(err);
+            finalAction(err);
+        } else {
+            request.confirmed = true;
+            request.save(function (err, request) {
+                Account.findOne({
+                    _id: request.reciever
+                }, function (err, user) {
+                    if (err) {
+                        finalAction(err);
+                    } else {
+                        user.contacts.push(request.sender);
+                        user.save(function (err, userVar) {
+                            if (err) {
+                                finalAction(err);
+                            } else {
+                                Account.findOne({
+                                    _id: request.sender
+                                }, function (err, user2) {
+                                    if (err) {
+                                        finalAction(err);
+                                    } else {
+                                        user2.contacts.push(request.reciever);
+                                        user2.save(finalAction);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+            });
+        }
+    });
+};
+
+exports.removeContact = function (paramObject, finalAction) {
+    var helperFunction = function (targetUser, removedID) {
+        var index = targetUser.contacts.indexOf(removedID);
+        while (index != -1) {
+            targetUser.contacts.splice(index, 1);
+            index = targetUser.contacts.indexOf(removedID);
+        }
+    };
+
+    Account.findOne({
+        _id: paramObject._id
+    }, function (err, user) {
+        if (err) {
+            finalAction(err);
+        } else {
+            helperFunction(user, paramObject.removedID);
+            user.save(function (err, userDupe) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    Account.findOne({
+                        _id: paramObject.removedID
+                    }, function (err, user2) {
+                        if (err) {
+                            finalAction(err);
+                        } else {
+                            helperFunction(user2, paramObject._id);
+                            user2.save(finalAction);
+                        }
+                    });
+                }
+            });
+        }
+    });
+};
+
 exports.performNotificationAction = function (id, action) {
     Notification.findOne({
         _id: id
@@ -150,6 +254,23 @@ exports.getUser = function (username) {
     });
     console.log('found: ' + user.username);
     return user;
+};
+
+exports.getContacts = function (paramObject, finalAction) {
+    console.log(paramObject._id);
+    Account.findOne({
+        _id: paramObject._id
+    }, function (err, user) {
+        if (err) {
+            finalAction(err);
+        } else {
+            Account.find({
+                _id: {
+                    $in: user.contacts
+                }
+            }, finalAction);
+        }
+    });
 };
 
 exports.performUserNotesAction = function (userID, callback) {

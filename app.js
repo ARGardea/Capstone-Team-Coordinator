@@ -194,14 +194,17 @@ app.get('/ListNotifications', accessInterceptor, function (req, res) {
 app.get('/AddContact', accessInterceptor, function (req, res) {
     persist.performUserAction(req.query.targetUsername, function (err, user) {
         if (user) {
-            persist.addRequest({
-                sender: req.session.UserID,
+            persist.addCheckedRequest({
+                sender: req.session.userID,
                 reciever: user._id
             }, function (err, request) {
                 if (err) {
                     console.error(err);
+                    res.locals.message = err;
+                    res.render('Home');
                 } else {
                     console.log('Request saved! ' + request._id);
+                    res.redirect('Profile?username=' + user.username);
                 }
             });
         } else {
@@ -211,16 +214,71 @@ app.get('/AddContact', accessInterceptor, function (req, res) {
     });
 });
 
-app.get('/ConfirmRequest', accessInterceptor, function (req, res) {
+app.get('/RemoveContact', accessInterceptor, function (req, res) {
+    persist.removeContact({
+        _id: req.session.userID,
+        removedID: req.query.targetID
+    }, function (err, user2) {
+        if (err) {
+            console.error(err);
+            res.locals.message = 'An error has occured';
+            res.render('Error');
+        } else {
+            res.locals.message = 'You have successfully removed ' + user2.username + ' from your contacts.';
+            res.render('Home');
+        }
+    });
+});
 
+app.get('/ConfirmRequest', accessInterceptor, function (req, res) {
+    persist.confirmRequest({
+        _id: req.query.requestID
+    }, function (err, user) {
+        if (err) {
+            console.error(err);
+            res.locals.message = 'An error has occured.';
+            res.render('Home');
+        } else {
+            res.locals.message = 'You have added ' + user.username + ' to your contacts!';
+            res.render('Home');
+        }
+    });
 });
 
 app.get('/DenyRequest', accessInterceptor, function (req, res) {
 
 });
 
-app.get('/ViewContactRequests', accessInterceptor, function (req, res) {
+app.get('/ListContacts', accessInterceptor, function (req, res) {
+    persist.getContacts({
+        _id: req.session.userID
+    }, function (err, docs) {
+        if (err) {
+            console.error(err);
+            res.locals.message = "An error has occured.";
+            res.render('Home');
+        } else {
+            console.log(docs);
+            res.locals.list = docs;
+            res.render('ListContacts');
+        }
+    });
+});
 
+app.get('/ListContactRequests', accessInterceptor, function (req, res) {
+    persist.requestListAction({
+            reciever: req.session.userID,
+            confirmed: false,
+            rejected: false
+        },
+        function (err, docs) {
+            if (err) {
+                console.error(err);
+            } else {
+                res.locals.list = docs;
+                res.render('ListContactRequests');
+            }
+        });
 });
 
 app.get('/:viewname', superInterceptor, function (req, res) {
