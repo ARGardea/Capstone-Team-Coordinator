@@ -27,13 +27,14 @@ exports.sendMessage = function (targetNumber, message, callback) {
         from: appNumber,
         body: message
     }, callback);
-    persist.addMessage({
-        phoneNumber: targetNumber,
-        message: message,
-        incoming: false
-    }, function () {
-        console.log('Save outgoing message.');
-    })
+//    persist.addMessage({
+//        phoneNumber: targetNumber,
+//        message: message,
+//        incoming: false
+//    }, function () {
+//        console.log('Save outgoing message.');
+//        callback();
+//    })
 };
 
 exports.handleIncoming = function (req, res, callback) {

@@ -342,6 +342,43 @@ app.post('/CreateNotification', accessInterceptor, function (req, res) {
     });
 });
 
+function sendNote(paramObject, callback) {
+    persist.performUserAction(paramObject.sender, function (err, sender) {
+        if (err) {
+            callback(err);
+        } else if (sender) {
+            persist.performUserAction(paramObject.reciever, function (err, reciever) {
+                if (err) {
+                    callback(err);
+                } else if (reciever) {
+                    persist.addMessage({
+                        phoneNumber: reciever.phoneNumber,
+                        sender: sender._id,
+                        reciever: reciever._id,
+                        text: paramObject.message.text,
+                        subject: paramObject.message.subject,
+                        incoming: false,
+                        postTime: new Date()
+                    }, function (err, message) {
+                        if (err) {
+                            callback(err, null);
+                        } else {
+                            //if user has opted in for text messages
+                            var textMessage = "Via TeamCoord! \nSender: " + paramObject.sender + "\n\n  Subject: " + message.subject + "\n\n  Message: " + message.text;
+                            console.log(textMessage);
+                            phone.sendMessage(reciever.phoneNumber, textMessage, function () {
+                                console.log('Phone message sent to ' + reciever.phoneNumber + ', corresponding to DB message ' + message._id);
+                            });
+
+                            callback(null, message);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
 app.post('/SendNote', accessInterceptor, function (req, res) {
     console.log('got note message!');
     var paramObject = {
@@ -353,24 +390,42 @@ app.post('/SendNote', accessInterceptor, function (req, res) {
         text: req.body.message
     };
 
-    persist.performUserAction(req.session.username, function (err, user) {
-        if (user) {
-            paramObject.sender = user._id;
-            persist.performUserAction(req.body.reciever, function (err, reciever) {
-                if (reciever) {
-                    paramObject.reciever = reciever._id;
-                    persist.addMessage(paramObject, function () {
-                        phone.sendMessage(reciever.phoneNumber, "Sender: " + req.session.username + "\n\n Subject: " + paramObject.subject + "\n\n Message: " + paramObject.text, function () {});
-                        res.render('Home');
-                    });
-                } else {
-                    console.log('No reciever found!');
-                }
-            });
+    sendNote({
+        sender: req.session.username,
+        reciever: req.body.reciever,
+        message: {
+            subject: req.body.subject,
+            text: req.body.message
+        }
+    }, function (err, message) {
+        if (err) {
+            console.error(err);
+            res.locals.message = 'An error occured while attempting to send your note.';
+            res.render('Error');
         } else {
-            console.log('No user found!')
+            res.locals.message = 'Your message to ' + req.body.reciever + ' has been sent!';
+            res.render('Home');
         }
     });
+
+    //    persist.performUserAction(req.session.username, function (err, user) {
+    //        if (user) {
+    //            paramObject.sender = user._id;
+    //            persist.performUserAction(req.body.reciever, function (err, reciever) {
+    //                if (reciever) {
+    //                    paramObject.reciever = reciever._id;
+    //                    phone.sendMessage(reciever.phoneNumber, "Sender: " + req.session.username + "\n\n Subject: " + paramObject.subject + "\n\n Message: " + paramObject.text, function () {});
+    //
+    //                    res.locals.message = 'Your message has been sent!';
+    //                    res.render('Home');
+    //                } else {
+    //                    console.log('No reciever found!');
+    //                }
+    //            });
+    //        } else {
+    //            console.log('No user found!')
+    //        }
+    //    });
 
 });
 
@@ -389,11 +444,44 @@ app.post('/twilio', superInterceptor, function (req, res) {
                 console.error(err);
             } else {
                 console.log(message._id + ' was saved to the database!');
-                var regexString = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo]:[ ]*([a-zA-Z]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/? ]*)/g;
+                var regexString = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo]:[ ]*([a-zA-Z]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/? \n]*)/g;
                 var match = regexString.exec(message.message);
-                console.log(match[0]);
-                console.log(match[1]);
-                console.log(match[2]);
+                persist.performUserAction(match[1], function (err, user) {
+                    if (err) {
+                        console.error(err);
+                    } else if (user) {
+                        var numberString = parseInt(req.body.From);
+                        if (numberString == user.phoneNumber) {
+                            sendNote({
+                                sender: user.username,
+                                reciever: match[2],
+                                message: {
+                                    subject: 'SMS Message',
+                                    text: match[3]
+                                }
+                            }, function (err, smsMessage) {
+                                if (err) {
+                                    console.error(err);
+                                }
+                            });
+                        } else {
+                            var returnMessage = "Your number (" + numberString + ") doesn't match the user " + user.username;
+                            phone.sendMessage(message.phoneNumber, returnMessage, function () {});
+                        }
+                        //                        sendNote({
+                        //                            sender: req.session.username,
+                        //                            reciever: req.body.reciever,
+                        //                            message: {
+                        //                                subject: req.body.subject,
+                        //                                text: req.body.text
+                        //                            }
+                        //                        }, function (err, message) {
+                        //                        });
+                    } else {
+                        var returnMessage = "The user " + match[1] + " could not be found!";
+                        phone.sendMessage(message.phoneNumber, returnMessage, function () {});
+                    }
+                });
             }
         });
     });

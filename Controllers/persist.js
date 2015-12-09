@@ -106,7 +106,7 @@ exports.addMessage = function (paramObject, action) {
     });
     newMessage.save(function (err, newMessage) {
         console.log(newMessage._id + ' saved to database.');
-        action();
+        action(err, newMessage);
     });
 };
 
