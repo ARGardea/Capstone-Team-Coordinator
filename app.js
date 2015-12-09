@@ -258,7 +258,6 @@ app.get('/ListContacts', accessInterceptor, function (req, res) {
             res.locals.message = "An error has occured.";
             res.render('Home');
         } else {
-            console.log(docs);
             res.locals.list = docs;
             res.render('ListContacts');
         }
@@ -361,7 +360,7 @@ app.post('/SendNote', accessInterceptor, function (req, res) {
                 if (reciever) {
                     paramObject.reciever = reciever._id;
                     persist.addMessage(paramObject, function () {
-                        phone.sendMessage(reciever.phoneNumber, "Sender: " + req.session.username + " - Subject: " + paramObject.subject + " - Message: " + paramObject.text, function () {});
+                        phone.sendMessage(reciever.phoneNumber, "Sender: " + req.session.username + "\n\n Subject: " + paramObject.subject + "\n\n Message: " + paramObject.text, function () {});
                         res.render('Home');
                     });
                 } else {
@@ -385,11 +384,16 @@ app.post('/twilio', superInterceptor, function (req, res) {
             phoneNumber: req.body.From,
             message: req.body.Body,
             incoming: true
-        }, function(err, message){
-            if(err){
+        }, function (err, message) {
+            if (err) {
                 console.error(err);
-            }else{
+            } else {
                 console.log(message._id + ' was saved to the database!');
+                var regexString = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo]:[ ]*([a-zA-Z]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/? ]*))/g;
+                var match = regexString.exec(message.message);
+                console.log(match[0]);
+                console.log(match[1]);
+                console.log(match[2]);
             }
         });
     });

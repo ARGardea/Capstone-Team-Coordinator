@@ -36,3 +36,4 @@ data/data.0
 data/data.ns
 *.0
 data/local.ns
+data/mongod.lock
