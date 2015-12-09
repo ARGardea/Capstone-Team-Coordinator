@@ -389,7 +389,7 @@ app.post('/twilio', superInterceptor, function (req, res) {
                 console.error(err);
             } else {
                 console.log(message._id + ' was saved to the database!');
-                var regexString = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo]:[ ]*([a-zA-Z]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/? ]*))/g;
+                var regexString = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo]:[ ]*([a-zA-Z]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/? ]*)/g;
                 var match = regexString.exec(message.message);
                 console.log(match[0]);
                 console.log(match[1]);
