@@ -15,6 +15,8 @@ html
                     a(href='/') Home
                 -if(typeof(username) !== 'undefined'){
                 li
+                    a(href='/UserList') All Users
+                li
                     a(href='/Profile?username=#{username}') My Profile
                 li
                     a(href='/ListNotifications') Notifications

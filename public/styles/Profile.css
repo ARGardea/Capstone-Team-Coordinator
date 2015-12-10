@@ -1,0 +1,42 @@
+div.main {
+    background-color: #C9BAA9;
+    height: 70%;
+}
+
+div.headerDiv {
+    background-color: #AA9D8D;
+    padding: 10px;
+}
+
+div.headerDiv span.username,
+div.headerDiv span.links {
+    display: inline-block;
+    width: 50%;
+}
+
+span.username {
+    font-size: 20pt;
+}
+
+span.links {
+    font-size: 16pt;
+}
+
+div.headerDiv span.links {
+    text-align: right;
+}
+
+span.links a {
+    color: #363E54;
+    padding: 5px;
+    margin-right: 5px;
+}
+
+span.links a:hover {
+    background-color: #BCAD9E;
+/*    background-color: #AA9D8D;*/
+}
+
+div.profMain {
+    padding: 20px;
+}

@@ -1,0 +1,79 @@
+
+label {
+    font-size: 16pt;
+}
+
+div.recieverName, div.recievername label {
+    font-size: 18pt;
+}
+
+div.recieverName, div.subjectLine, div.messageBox {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div.recieverName label, div.subjectLine label, div.messageBox label {
+    display: block;
+    max-width: 90%;
+    margin: 0px;
+}
+
+div.recieverName label {
+    display: inline;
+    margin-right: 10px;
+}
+
+
+div.subjectLine input {
+    display: block;
+}
+
+div.messageBox label {
+    background-color: #5E5852;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    max-width: 200px;
+    padding-left: 10px;
+    padding-top: 5px;
+    vertical-align: top;
+    display: block;
+}
+
+div.messageBox textarea {
+    width: 100%;
+    resize: none;
+    background-color: #EFE9E1;
+    border: 2px solid #5E5852;
+    border-radius: 5px;
+    border-top-left-radius: 0px;
+}
+
+form.noteForm {
+    border-radius: 5px;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #AA9D8D;
+    padding: 20px;
+}
+
+input.submit {
+    font-size: 18pt;
+    font-family: 'Yanone Kaffeesatz', sans-serif;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;
+    min-width: 150px;
+    background-color: #5E5852;
+    color: #E2D2BE;
+    border-radius: 5px;
+    padding: 5px;
+    margin-top: 10px;
+    border: none;
+}
+
+input.submit:hover {
+    background-color: #7C7268;
+}

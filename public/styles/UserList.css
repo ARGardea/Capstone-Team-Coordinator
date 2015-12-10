@@ -1,0 +1,39 @@
+div.listDiv {
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 16pt;
+}
+
+
+div.userDiv {
+    background-color: #C4B8A6;
+    margin: 5px 0px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+div.userDiv span.username, div.userDiv a.profileLink {
+    color: #352C1F;
+    display: inline-block;
+    padding: 5px;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+div.userDiv a.profileLink {
+    background-color: #AA9D8D;
+}
+
+div.userDiv a.profileLink:hover {
+    background-color: #9E8D74;
+}
+
+span.align {
+    width: 50%;
+    display: inline-block;
+}
+
+span.right-align {
+    text-align: right;
+}

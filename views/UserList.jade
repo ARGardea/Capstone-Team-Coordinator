@@ -1,0 +1,14 @@
+extends BaseLayout
+
+block content
+    link(href='/styles/UserList.css', rel='stylesheet')
+    div(class='main')
+        -if(typeof(users) !== 'undefined') {
+            div(class='listDiv')
+                each item in users
+                    div(class='userDiv')
+                        span(class='username')
+                            |#{item.username}
+                        a(href='/Profile?username=#{item.username}', class='profileLink') View Profile
+                        br
+        -}

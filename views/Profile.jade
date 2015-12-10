@@ -1,32 +1,38 @@
 extends BaseLayout
 
 block content
+    link(href='/styles/Profile.css', rel='stylesheet')
     div(class="main")
-        -if (username == user.username){
-        a(href='/EditProfile') Edit Profile
-        br
-        -}else{
-        a(href='/SendNote?targetUsername=#{user.username}') Send Note
-        br
-        a(href='/AddContact?targetUsername=#{user.username}') Add Contact
-        br
-        -}
-        
-        span(class="username")
-            |#{user.username}
-        br
-        -if (typeof user.birthdate != 'undefined'){
-        span(class="birthdate")
-            |#{user.birthdate}  
-        br
-        -}
-        -if (typeof user.location != 'undefined'){
-        span(class='location')
-            |#{user.location}
-        br
-        -}
-        -if (typeof user.description != 'undefined'){
-        span(class='description')
-            |#{user.description}
-        br
-        -}
+        div(class='headerDiv')
+            span(class="username")
+                |#{user.username}
+            span(class='links')
+                -if (username == user.username){
+                a(href='/EditProfile') Edit Profile
+                -}else{
+                a(href='/SendNote?targetUsername=#{user.username}') Send Note
+                a(href='/AddContact?targetUsername=#{user.username}') Add Contact
+                -}
+        div(class='profMain')
+            div(class='bioDiv')
+                -if (typeof user.birthdate != 'undefined'){
+                span(class="birthdate")
+                    |#{user.birthdate}  
+                br
+                -}
+                -if (typeof user.location != 'undefined'){
+                span(class='location')
+                    |#{user.location}
+                br
+                -}
+
+            div(class='extraDiv')
+                div(class='descriptionDiv')
+                    h3(class='descriptionHeader') User Description
+                    p(class='description')
+                    -if (typeof user.description != 'undefined'){
+                        |#{user.description}
+                    -}else{
+                        |#{user.username} has not yet set their description.
+                    -}
+                    br

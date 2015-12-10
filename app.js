@@ -18,10 +18,10 @@ authorizer.init(persist, phone);
 //    }
 //});
 
-authorizer.registerUser('admin', 'password', 'AlexRogerG@gmail.net', 12099548558, authorizer.roles.ADMIN, function () {
+authorizer.registerUser('AGardea', 'password', 'AlexRogerG@gmail.net', 12099548558, authorizer.roles.ADMIN, function () {
 
 });
-authorizer.registerUser('mod', 'password', '123@1234.net', 1234567, authorizer.roles.MOD);
+authorizer.registerUser('Moderator', 'password', '123@1234.net', 12099548558, authorizer.roles.MOD);
 
 var bodyParser = require('body-parser');
 var app = express();
@@ -103,6 +103,19 @@ app.get('/Login', superInterceptor, function (req, res) {
 app.get('/Logout', superInterceptor, function (req, res) {
     unloadUser(req, res);
     res.render('Home');
+});
+
+app.get('/UserList', accessInterceptor, function (req, res) {
+    persist.getUserList({}, function (err, docs){
+        if(err){
+            console.error(err);
+            res.locals.message = 'An error has occured.';
+            res.render('Error');
+        }else{
+            res.locals.users = docs;
+            res.render('UserList');
+        }
+    });
 });
 
 app.get('/Profile', accessInterceptor, function (req, res) {
@@ -204,7 +217,8 @@ app.get('/AddContact', accessInterceptor, function (req, res) {
                     res.render('Home');
                 } else {
                     console.log('Request saved! ' + request._id);
-                    res.redirect('Profile?username=' + user.username);
+                    res.locals.message = 'Contact request sent to ' + user.username;
+                    res.render('Home');
                 }
             });
         } else {
@@ -246,7 +260,18 @@ app.get('/ConfirmRequest', accessInterceptor, function (req, res) {
 });
 
 app.get('/DenyRequest', accessInterceptor, function (req, res) {
-
+    persist.denyRequest({
+        _id: req.query.requestID
+    }, function (err, user) {
+        if(err) {
+            console.error(err);
+            res.locals.message = 'An error has occured.';
+            res.render('Home');
+        }else {
+            res.locals.message = 'You have successfully denied ' + user.username + "'s contact request.";
+            res.render('Home');
+        }
+    });
 });
 
 app.get('/ListContacts', accessInterceptor, function (req, res) {

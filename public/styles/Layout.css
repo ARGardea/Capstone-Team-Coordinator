@@ -43,6 +43,7 @@ ul.headerMenu {
     text-align: center;
     vertical-align: middle;
     padding: 0px;
+    margin-top: 0px;
 }
 
 ul.headerMenu > li {
@@ -50,10 +51,19 @@ ul.headerMenu > li {
 }
 
 ul.headerMenu > li > a:hover {
+    background-color: #C9BAA9;
+}
+
+a {
+    text-decoration: none;
 }
 
 ul.headerMenu > li > a {
-    font-size: 22px;
-    text-decoration: none;
-    padding: 0px 10px;
+    display: inline-block;
+    color: antiquewhite;
+    font-size: 24px;
+    padding: 5px 10px;
+    margin: 3px 8px;
+    background-color: #AA9D8D;
+    border-radius: 5px;
 }

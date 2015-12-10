@@ -190,7 +190,26 @@ exports.confirmRequest = function (paramObject, finalAction) {
                             }
                         });
                     }
-                })
+                });
+            });
+        }
+    });
+};
+
+exports.denyRequest = function (paramObject, finalAction) {
+    Request.findOne(paramObject, function (err, request) {
+        if (err) {
+            finalAction(err);
+        } else {
+            request.rejected = true;
+            request.save(function (err, request) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    Account.findOne({
+                        _id: request.sender
+                    }, finalAction);
+                }
             });
         }
     });
@@ -251,6 +270,10 @@ exports.getUser = function (username) {
     });
     console.log('found: ' + user.username);
     return user;
+};
+
+exports.getUserList = function (paramObject, finalAction) {
+    Account.find(paramObject, finalAction);
 };
 
 exports.getContacts = function (paramObject, finalAction) {
