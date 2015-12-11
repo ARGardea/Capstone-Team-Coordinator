@@ -106,12 +106,12 @@ app.get('/Logout', superInterceptor, function (req, res) {
 });
 
 app.get('/UserList', accessInterceptor, function (req, res) {
-    persist.getUserList({}, function (err, docs){
-        if(err){
+    persist.getUserList({}, function (err, docs) {
+        if (err) {
             console.error(err);
             res.locals.message = 'An error has occured.';
             res.render('Error');
-        }else{
+        } else {
             res.locals.users = docs;
             res.render('UserList');
         }
@@ -157,7 +157,11 @@ app.get('/SendNote', accessInterceptor, function (req, res) {
 
 });
 
-app.get('/ReplyNote', accessInterceptor, function (req, res) {});
+app.get('/ReplyNote', accessInterceptor, function (req, res) {
+    if (req.quert.noteID) {
+
+    }
+});
 
 app.get('/ViewNotes', accessInterceptor, function (req, res) {
     persist.performUserAction(req.session.username, function (err, user) {
@@ -174,6 +178,44 @@ app.get('/ViewNotes', accessInterceptor, function (req, res) {
     });
 });
 
+function sendNote(paramObject, callback) {
+    persist.performUserAction(paramObject.sender, function (err, sender) {
+        if (err) {
+            callback(err);
+        } else if (sender) {
+            persist.performUserAction(paramObject.reciever, function (err, reciever) {
+                if (err) {
+                    callback(err);
+                } else if (reciever) {
+                    persist.addMessage({
+                        phoneNumber: reciever.phoneNumber,
+                        sender: sender._id,
+                        senderName: sender.username,
+                        reciever: reciever._id,
+                        text: paramObject.message.text,
+                        subject: paramObject.message.subject,
+                        incoming: false,
+                        postTime: new Date()
+                    }, function (err, message) {
+                        if (err) {
+                            callback(err, null);
+                        } else {
+                            //if user has opted in for text messages
+                            var textMessage = "Via TeamCoord! \nSender: " + paramObject.sender + "\n\n  Subject: " + message.subject + "\n\n  Message: " + message.text;
+                            console.log(textMessage);
+                            phone.sendMessage(reciever.phoneNumber, textMessage, function () {
+                                console.log('Phone message sent to ' + reciever.phoneNumber + ', corresponding to DB message ' + message._id);
+                            });
+
+                            callback(null, message);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
 app.get('/ListNotifications', accessInterceptor, function (req, res) {
     persist.performUserAction(req.session.username, function (err, user) {
         if (user) {
@@ -185,13 +227,18 @@ app.get('/ListNotifications', accessInterceptor, function (req, res) {
 
             var recurseHelper = function () {
                 persist.performNotificationAction(user.notifications[i], function (err, target) {
-                    notifications.push(target.toObject());
-                    i++;
-                    if (i < index) {
-                        recurseHelper();
-                    } else {
-                        res.locals.list = notifications;
-                        res.render('ListNotification');
+                    if (target) {
+                        notifications.push(target.toObject());
+                        i++;
+                        if (i < index) {
+                            recurseHelper();
+                        } else {
+                            res.locals.list = notifications;
+                            res.render('ListNotification');
+                        }
+                    }else{
+                        res.locals.message = 'No Notifications were found.';
+                            res.render('ListNotification');
                     }
                 });
             };
@@ -205,10 +252,12 @@ app.get('/ListNotifications', accessInterceptor, function (req, res) {
 });
 
 app.get('/AddContact', accessInterceptor, function (req, res) {
+    console.log(req.session.username);
     persist.performUserAction(req.query.targetUsername, function (err, user) {
         if (user) {
             persist.addCheckedRequest({
                 sender: req.session.userID,
+                senderName: req.session.username,
                 reciever: user._id
             }, function (err, request) {
                 if (err) {
@@ -233,14 +282,19 @@ app.get('/RemoveContact', accessInterceptor, function (req, res) {
         _id: req.session.userID,
         removedID: req.query.targetID
     }, function (err, user2) {
-        if (err) {
-            console.error(err);
-            res.locals.message = 'An error has occured';
-            res.render('Error');
-        } else {
-            res.locals.message = 'You have successfully removed ' + user2.username + ' from your contacts.';
-            res.render('Home');
-        }
+        persist.clearRequest({
+            sender: req.query.targetID,
+            reciever: req.session.userID
+        }, function (err, request) {
+            if (err) {
+                console.error(err);
+                res.locals.message = 'An error has occured';
+                res.render('Error');
+            } else {
+                res.locals.message = 'You have successfully removed ' + user2.username + ' from your contacts.';
+                res.render('Home');
+            }
+        });
     });
 });
 
@@ -263,11 +317,11 @@ app.get('/DenyRequest', accessInterceptor, function (req, res) {
     persist.denyRequest({
         _id: req.query.requestID
     }, function (err, user) {
-        if(err) {
+        if (err) {
             console.error(err);
             res.locals.message = 'An error has occured.';
             res.render('Home');
-        }else {
+        } else {
             res.locals.message = 'You have successfully denied ' + user.username + "'s contact request.";
             res.render('Home');
         }
@@ -366,43 +420,6 @@ app.post('/CreateNotification', accessInterceptor, function (req, res) {
         }
     });
 });
-
-function sendNote(paramObject, callback) {
-    persist.performUserAction(paramObject.sender, function (err, sender) {
-        if (err) {
-            callback(err);
-        } else if (sender) {
-            persist.performUserAction(paramObject.reciever, function (err, reciever) {
-                if (err) {
-                    callback(err);
-                } else if (reciever) {
-                    persist.addMessage({
-                        phoneNumber: reciever.phoneNumber,
-                        sender: sender._id,
-                        reciever: reciever._id,
-                        text: paramObject.message.text,
-                        subject: paramObject.message.subject,
-                        incoming: false,
-                        postTime: new Date()
-                    }, function (err, message) {
-                        if (err) {
-                            callback(err, null);
-                        } else {
-                            //if user has opted in for text messages
-                            var textMessage = "Via TeamCoord! \nSender: " + paramObject.sender + "\n\n  Subject: " + message.subject + "\n\n  Message: " + message.text;
-                            console.log(textMessage);
-                            phone.sendMessage(reciever.phoneNumber, textMessage, function () {
-                                console.log('Phone message sent to ' + reciever.phoneNumber + ', corresponding to DB message ' + message._id);
-                            });
-
-                            callback(null, message);
-                        }
-                    });
-                }
-            });
-        }
-    });
-}
 
 app.post('/SendNote', accessInterceptor, function (req, res) {
     console.log('got note message!');

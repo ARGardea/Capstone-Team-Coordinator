@@ -29,18 +29,84 @@ div.subjectLine input {
     display: block;
 }
 
-div.messageBox label {
+div.sendToPhone {
+    text-align: center;
+}
+
+div.messageBox label, div.loginWrapper label, div.message label, div.date label, div.subjectLine label {
+    color: #E1D1BD;
+    font-size: 18pt;
     background-color: #5E5852;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     max-width: 200px;
     padding-left: 10px;
     padding-top: 5px;
+    padding-bottom: 5px;
     vertical-align: top;
     display: block;
 }
 
-div.messageBox textarea {
+
+div.date input, div.subjectLine input {
+    border-radius: 5px;
+    border-top-left-radius: 0px;
+}
+
+input {
+    background-color: #EFE9E1;
+    padding: 5px;
+}
+
+div.loginWrapper label {
+    max-width: 250px;
+    margin-left: auto;
+    margin-right: auto;
+    color: #E1D1BD;
+    padding: 5px 0px;
+}
+
+div.loginWrapper input {
+    border: 5px solid #5E5852;
+    font-size: 16pt;
+}
+
+div.subjectLine input {
+    border: 2px solid #5E5852;
+    font-size: 14pt;
+}
+
+form.notification input {
+    border: 2px solid #5E5852;
+    font-size: 14pt;
+}
+
+div.date {
+    margin-bottom: 5px;
+}
+
+div.loginWrapper label.password {
+    margin-top: 10px;
+}
+
+form.loginForm label {
+    display: block;
+}
+
+div.loginWrapper input {
+    max-width: 250px;
+}
+
+div.loginWrapper input.submit {
+    border: none;
+}
+
+input.password, input.username {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+div.messageBox textarea, div.message input {
     width: 100%;
     resize: none;
     background-color: #EFE9E1;
@@ -49,13 +115,35 @@ div.messageBox textarea {
     border-top-left-radius: 0px;
 }
 
-form.noteForm {
+div.signupWrapper label {
+    border-radius: 0px;
+}
+
+div.usernameWrapper label {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+div.phoneWrapper input {
+    border-bottom: 10px solid #5E5852;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+form.noteForm, div.loginWrapper, form.notification {
     border-radius: 5px;
     max-width: 90%;
     margin-left: auto;
     margin-right: auto;
     background-color: #AA9D8D;
     padding: 20px;
+}
+
+div.loginWrapper {
+/*    background: none;*/
+    max-width: 300px;
+    text-align: center;
+    border-radius: 10px;
 }
 
 input.submit {
@@ -68,6 +156,7 @@ input.submit {
     min-width: 150px;
     background-color: #5E5852;
     color: #E2D2BE;
+    border: none;
     border-radius: 5px;
     padding: 5px;
     margin-top: 10px;

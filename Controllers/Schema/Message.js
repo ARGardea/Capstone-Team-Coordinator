@@ -5,6 +5,7 @@ var mongoose = require('mongoose'),
 var MessageSchema = new Schema({
     parent: ObjectId,
     sender: ObjectId,
+    senderName: String,
     reciever: ObjectId,
     postTime: Date,
     isPrivate: Boolean,

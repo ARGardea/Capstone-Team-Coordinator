@@ -1,11 +1,13 @@
 extends BaseLayout
 
 block content
+    link(href='/styles/ListContactRequests.css', rel='stylesheet')
     div(class='main')
         -if(typeof(list) !== 'undefined') {
             each item in list
-                |Sender: #{item.sender}
-                br
-                a(href='/ConfirmRequest?requestID=#{item._id}') Accept Request
-                a(href='/DenyRequest?requestID=#{item._id}') Deny Request
+                div(class='requestDiv')
+                    span(class='username')
+                        |From: #{item.senderName} 
+                    a(href='/ConfirmRequest?requestID=#{item._id}') Accept Request
+                    a(href='/DenyRequest?requestID=#{item._id}') Deny Request
         -}

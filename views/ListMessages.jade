@@ -1,11 +1,18 @@
 extends BaseLayout
 
 block content
+    link(href='/styles/ViewNotes.css', rel='stylesheet')
     div(class='main')
         -if(typeof(list) !== 'undefined'){
             each item in list
-                |Sender: #{item.sender}
-                |Subject: #{item.subject}
-                |Message: #{item.text}
-                br
+                div(class='messageDiv')
+                    span(class='senderName')
+                        |Sender: #{item.senderName}
+                        a(href='/Profile?username=#{item.senderName}', class='profileLink') View Profile
+                    span(class='subject')
+                        span Subject:
+                        |#{item.subject}
+                    span(class='text')
+                        span Message:
+                        |#{item.text}
         -}

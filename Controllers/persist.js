@@ -97,6 +97,7 @@ exports.addMessage = function (paramObject, action) {
     var newMessage = new Message({
         parent: paramObject.parent || null,
         sender: paramObject.sender,
+        senderName: paramObject.senderName,
         reciever: paramObject.reciever,
         postTime: paramObject.postTime,
         isPrivate: paramObject.isPrivate,
@@ -122,6 +123,7 @@ exports.addTextMessage = function (paramObject, finalAction) {
 exports.addRequest = function (paramObject, finalAction) {
     var newRequest = new Request({
         sender: paramObject.sender,
+        senderName: paramObject.senderName,
         reciever: paramObject.reciever,
         confirmed: false,
         rejected: false
@@ -139,16 +141,33 @@ exports.requestListAction = function (paramObject, finalAction) {
     Request.find(paramObject, finalAction);
 }
 
-exports.addCheckedRequest = function (paramObject, finalAction) {
+exports.clearRequest = function (paramObject, finalAction) {
     requestExistsGate({
         sender: paramObject.sender,
         reciever: paramObject.reciever
     }, function (err, request) {
-        if (request) {
+        if(request){
+            request.rejected = true;
+            request.confirmed = false;
+            request.save(finalAction);
+        }else{
+            console.error(err);
+        }
+    });
+}
+
+exports.addCheckedRequest = function (paramObject, finalAction) {
+    requestExistsGate({
+        sender: paramObject.sender,
+        senderName: paramObject.senderName,
+        reciever: paramObject.reciever
+    }, function (err, request) {
+        if (request && !request.rejected) {
             finalAction("A request from " + request.sender + " to " + request.reciever + " has already been made.");
         } else {
             var newRequest = new Request({
                 sender: paramObject.sender,
+                senderName: paramObject.senderName,
                 reciever: paramObject.reciever,
                 confirmed: false,
                 rejected: false

@@ -1,14 +1,14 @@
 extends BaseLayout
 
 block content
+    link(href='/styles/ListContactRequests.css', rel='stylesheet')
     div(class='main')
         -if(typeof(list) !== 'undefined') {
             each item in list
-                |#{item.username} ~ ~
-                a(href='/Profile?username=#{item.username}', class='contactLink') View Profile 
-                | ~ ~
-                a(href='/SendNote?targetUsername=#{item.username}', class='contactLink') Send Note
-                | ~ ~
-                a(href='/RemoveContact?targetID=#{item._id}', class='contactLink') Remove Contact
-                br
+                div(class='contactDiv')
+                    span(class='username')
+                        |#{item.username}
+                    a(href='/Profile?username=#{item.username}', class='contactLink') View Profile 
+                    a(href='/SendNote?targetUsername=#{item.username}', class='contactLink') Send Note
+                    a(href='/RemoveContact?targetID=#{item._id}', class='contactLink') Remove Contact
         -}

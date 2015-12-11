@@ -1,20 +1,20 @@
 extends BaseLayout
 
 block content
+    link(rel='stylesheet', href='styles/SendNote.css')
     div(class="main")
-        h2
-            |This is the account creation page!
-        form(method='POST', action='/Signup')
-            label(for='username') Username:
-            input(name='username', id='username')
-            br
-            label(for='password') Password:
-            input(name='password', id='password', type='password')
-            br
-            label(for='email') Email:
-            input(name='email', id='email')
-            br
-            label(for='phoneNumber') Phone Number:
-            input(name='phoneNumber', id='phoneNumber')
-            br
-            input(type='submit', value='Register')
+        div(class='loginWrapper signupWrapper')
+            form(method='POST', action='/Signup')
+                div(class='usernameWrapper')
+                    label(for='username') Username:
+                    input(name='username', id='username')
+                div(class='passwordWrapper')
+                    label(for='password') Password:
+                    input(name='password', id='password', type='password')
+                div(class='emailWrapper')
+                    label(for='email') Email:
+                    input(name='email', id='email')
+                div(class='phoneWrapper')
+                    label(for='phoneNumber') Phone Number:
+                    input(name='phoneNumber', id='phoneNumber')
+                input(type='submit', value='Register', class='submit')

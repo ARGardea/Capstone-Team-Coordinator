@@ -1,0 +1,39 @@
+div.messageDiv {
+    background-color: #C4B8A6;
+    font-size: 16pt;
+    margin: 5px 0px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+div.messageDiv span {
+    display: block;
+    margin-bottom: 5px;
+}
+
+div.messageDiv span span {
+    display: inline;
+    padding-right: 5px;
+}
+
+span.senderName, span.subject, span.text {
+    background-color: #E2D2BE;
+    border-radius: 5px;
+    max-width: 40%;
+    padding: 5px;
+}
+
+span.text {
+    max-width: inherit;
+}
+
+span.senderName a {
+    margin-left: 10px;
+    font-size: 14pt;
+    color: #363E54;
+    padding: 5px;
+}
+
+span.senderName a:hover {
+    background-color: #C4B8A6;
+}

@@ -1,14 +1,19 @@
 extends BaseLayout
 
 block content
+    link(href='/styles/ListContactRequests.css', rel='stylesheet')
     div(class='main')
-        a(href='/CreateNotification') Create a New Notification
-        br
-        br
+        a(href='/CreateNotification' class='notificationCreate') Create a New Notification
         -if(typeof(list) !== 'undefined'){
             each item in list
-                |Date: #{item.date}
-                |Message: #{item.message}
-                |Sent: #{item.sent}
-                br
+                div(class='notificationDiv')
+                    span(class='date')
+                        |Date: #{item.date}
+                    span(class='sent')
+                        |Sent: #{item.sent}
+                    br
+                    span(class='message')
+                        |Message: #{item.message}
+        -}else{
+            |#{message}
         -}
