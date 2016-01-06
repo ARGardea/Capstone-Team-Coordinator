@@ -1,0 +1,42 @@
+extends BaseLayout
+
+block content
+    link(href='/styles/Profile.css', rel='stylesheet')
+    div(class="main")
+        div(class='headerDiv')
+            span(class='groupname')
+                |#{group.name}
+            span(class='links')
+                -if(inGroup){
+                    a(href='/NoteGroup?groupId=#{group._id}') Note Group
+                    -if(hasAuth){
+                    a(href='/ViewGroupJoinRequests?groupId=#{group._id}') View Join Requests
+                    a(href='/ManageUsers?groupId=#{group._id}') Manage Users
+                    -}
+                -}else{
+                    a(href='/UserJoinRequest?groupId=#{group._id}') Join Group
+                -}
+        div(class='profMain')
+            div(class='desDiv')
+                |#{group.description}
+            div(class='extraDiv')
+                div(class='membersDiv')
+                    div(class='ownerDiv')
+                        h3(class='ownerLabel') Owner:
+                        a(href='/Profile?username=#{owner.username}', class='userLink') #{owner.username}
+                    div(class='moderatorDiv')
+                        h3(class='modLabel') Moderators:
+                        -if(mods.length > 0){
+                        each mod in mods
+                            a(href='/Profile?username=#{mod.username}', class='userLink') #{mod.username}
+                        -}else{
+                        |None yet
+                        -}
+                    div(class='userDiv')
+                        h3(class='userLabel') Members:
+                        -if(userList.length > 0){
+                        each user in userList
+                            a(href='/Profile?username=#{user.username}', class='userLink') #{user.username}
+                        -}else{
+                        |None yet
+                        -}

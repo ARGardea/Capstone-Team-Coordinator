@@ -1,0 +1,24 @@
+extends BaseLayout
+
+block content
+    link(href='/styles/ListContactRequests.css', rel='stylesheet')
+    div(class='main')
+        h3(class='groupLabel')
+            |Join Requests for #{groupname}
+        -if(typeof(list) !== 'undefined' && list.length > 0){
+        each item in list
+            div(class='requestDiv')
+                span(class='username')
+                    |From: #{item.member}
+                span(class='groupConfirmedLabel')
+                    |Group Accepted: #{item.groupConfirmed}
+                span(class='memberConfirmedLabel')
+                    |Member Accepted: #{item.memberConfirmed}
+                -if(item.groupConfirmed){
+                span(class='groupYes')
+                    |The member still needs to accept the join request,
+                -}else{
+                a(href='/ConfirmJoinRequest?requestId=#{item._id}') Confirm Request
+                a(href='/DenyJoinRequest?requestId=#{item._id}') Deny Request
+                -}
+        -}

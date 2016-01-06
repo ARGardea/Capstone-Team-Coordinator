@@ -5,14 +5,14 @@ div.main {
     margin-right: auto;
 }
 
-div.requestDiv, div.contactDiv, div.notificationDiv {
+div.requestDiv, div.contactDiv, div.notificationDiv, div.memberDiv, div.modDiv, div.ownerDiv {
     background-color: #C4B8A6;
     margin: 5px 0px;
     padding: 10px;
     border-radius: 5px;
 }
 
-div.requestDiv span.username, div.requestDiv a, div.contactDiv span.username, div.contactDiv a, div.notificationDiv span {
+div.requestDiv span.username, div.requestDiv a, div.contactDiv span.username, div.contactDiv a, div.notificationDiv span, div.modDiv a, div.memberDiv a, div.ownerDiv a {
     color: #352C1F;
     display: inline-block;
     padding: 5px;
@@ -20,11 +20,11 @@ div.requestDiv span.username, div.requestDiv a, div.contactDiv span.username, di
     margin-right: 10px;
 }
 
-div.requestDiv a:hover, div.contactDiv a:hover {
+div.requestDiv a:hover, div.contactDiv a:hover, div.modDiv a:hover, div.memberDiv a:hover, div.ownerDiv a:hover {
     background-color: #9E8D74;
 }
 
-div.requestDiv a, div.contactDiv a{
+div.requestDiv a, div.contactDiv a, div.modDiv a, div.memberDiv a, div.ownerDiv a{
     background-color: #AA9D8D;
 }
 

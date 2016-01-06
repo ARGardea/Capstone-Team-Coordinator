@@ -1,0 +1,15 @@
+extends BaseLayout
+
+block content
+    link(href='/styles/UserList.css', rel='stylesheet')
+    div(class='main')
+        a(href='/CreateGroup', class='createLink') Create a New Group
+        -if(typeof(groupList) !== 'undefined'){
+            div(class='listDiv')
+                each item in groupList
+                    div(class='groupDiv')
+                        span(class='groupname')
+                            |#{item.name}
+                        a(href='/ViewGroup?groupId=#{item._id}', class='profileLink') View Group
+                        br
+        -}

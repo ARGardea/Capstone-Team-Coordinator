@@ -13,12 +13,13 @@ var AccountSchema = new Schema({
     location: String,
     notifications: [ObjectId],
     contacts: [ObjectId],
-    settings: [ObjectId]
+    settings: [ObjectId],
+    groups: [ObjectId]
 });
 
 exports.roles = {
-    'Admin' : 0,
-    'User' : 1
+    'Admin': 0,
+    'User': 1
 };
 
 exports.account = mongoose.model('Account', AccountSchema);

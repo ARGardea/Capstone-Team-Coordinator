@@ -33,12 +33,15 @@ var Notification = NotificationSchema.notification;
 var MessageSchema = require('./Schema/Message.js');
 var Message = MessageSchema.message;
 var GroupSchema = require('./Schema/Group.js');
+var Group = GroupSchema.group;
 var textSchema = require('./Schema/Text.js');
 var TextMessage = textSchema.textMessage;
 var settingSchema = require('./Schema/Settings.js');
 var Settings = settingSchema.settings;
 var requestSchema = require('./Schema/ContactRequest.js');
 var Request = requestSchema.request;
+var joinRequestSchema = require('./Schema/GroupJoinRequest.js');
+var JoinRequest = joinRequestSchema.joinRequest;
 
 exports.addTest = function (title, message, index) {
     var newTest = new Test({
@@ -131,6 +134,369 @@ exports.addRequest = function (paramObject, finalAction) {
     newRequest.save(finalAction);
 };
 
+exports.getGroup = function (paramObject, finalAction) {
+    Group.findOne(paramObject, finalAction);
+};
+
+exports.addGroup = function (paramObject, finalAction) {
+    var newGroup = new Group({
+        name: paramObject.name,
+        owner: paramObject.owner,
+        description: paramObject.description
+    });
+
+    newGroup.save(function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            Account.findOne({
+                _id: paramObject.owner
+            }, function (err, user) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    user.groups.push(group._id);
+                    user.save(finalAction);
+                }
+            });
+        }
+    });
+};
+
+exports.removeGroup = function (paramObject, finalAction) {
+    var target = Group.findOne(paramObject, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            Account.find({
+                _id: {
+                    $in: group.users
+                }
+            }, function (err, docs) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    for (var i = 0; i < docs.length; i++) {
+                        docs[i].groups.splice(docs[i].groups.indexOf(paramObject._id), 1);
+                        docs[i].save(function (err, doc) {
+                            if (err) {
+                                console.error('Inner Error! While iterating through users!/n' + err);
+                            }
+                        });
+                    }
+                    var dataObject = {
+                        groupName: group.name,
+                        docs: docs
+                    };
+                    finalAction(null, dataObject);
+                    group.remove();
+                }
+            });
+        }
+    });
+};
+
+exports.removeGroupMember = function (paramObject, finalAction) {
+    Group.findOne({
+        _id: paramObject.groupId
+    }, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            Account.findOne({
+                _id: paramObject.userId
+            }, function (err, user) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    user.groups.splice(user.groups.indexOf(paramObject.groupId), 1);
+                    user.save(function (err, userDoc) {
+                        if (err) {
+                            finalAction(err);
+                        } else {
+                            group.users.splice(group.users.indexOf(paramObject.userId), 1);
+                            var index1 = group.moderators.indexOf(paramObject.userId);
+                            if (index1 > -1) {
+                                group.moderators.splice(index1, 1);
+                            }
+                            //                            group.save(finalAction);
+                            group.save(function (err, group) {
+                                JoinRequest.findOne({
+                                    group: paramObject.groupId,
+                                    member: paramObject.userId,
+                                    denied: false
+                                }, function (err, request) {
+                                    if(err){
+                                        finalAction(err);
+                                    }else{
+                                        request.denied = true;
+                                        request.denialMessage = 'User removed from Group';
+                                        request.save(finalAction);
+                                    }
+                                });
+                            });
+                        }
+                    })
+                }
+            });
+        }
+    });
+};
+
+exports.joinGroup = function (paramObject, finalAction) {
+    Group.findOne({
+        _id: paramObject.groupId
+    }, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            Account.findOne({
+                _id: paramObject.userId
+            }, function (err, user) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    group.users.push(user._id);
+                    if (paramObject.addModerator) {
+                        group.moderators.push(user._id);
+                    }
+                    group.save(function (err, groupVar) {
+                        if (err) {
+                            finalAction(err);
+                        } else {
+                            user.groups.push(group._id);
+                            user.save(finalAction);
+                        }
+                    });
+                }
+            });
+        }
+    })
+};
+
+exports.makeJoinRequest = function (paramObject, finalAction) {
+    JoinRequest.findOne({
+        group: paramObject.groupId,
+        member: paramObject.userId
+    }, function (err, request) {
+        console.log(paramObject);
+        if (request && !request.denied) {
+            finalAction('A join request between group ' + paramObject.groupId + ' and user ' + paramObject.userId + ' is already pending.');
+        } else {
+            var newJoinRequest = new JoinRequest({
+                group: paramObject.groupId,
+                member: paramObject.userId,
+                groupConfirmed: paramObject.fromGroup,
+                memberConfirmed: !paramObject.fromGroup,
+                denied: false
+            });
+
+            newJoinRequest.save(finalAction);
+        }
+    });
+};
+
+exports.confirmJoinRequest = function (paramObject, finalAction) {
+    JoinRequest.findOne({
+        _id: paramObject.requestId
+    }, function (err, request) {
+        if (err) {
+            finalAction(err);
+        } else {
+            request.groupConfirmed = true;
+            request.memberConfirmed = true;
+            request.denialMessage = 'Confirmed by ' + paramObject.username;
+            request.save(finalAction);
+        }
+    });
+};
+
+exports.denyJoinRequest = function (paramObject, finalAction) {
+    JoinRequest.findOne({
+        _id: paramObject.requestId
+    }, function (err, request) {
+        if (err) {
+            finalAction(err);
+        } else {
+            request.denied = true;
+            if (paramObject.groupDenied) {
+                request.denialMessage = "Denied by the Group.";
+            } else {
+                request.denialMessage = "Denied by the User.";
+            }
+            request.save(finalAction);
+        }
+    });
+};
+
+exports.verifyGroupAuthority = function (paramObject, finalAction) {
+    Group.findOne({
+        _id: paramObject.groupId
+    }, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            var authObject = {
+                groupname: group.name,
+                isAuthorized: (group.owner == paramObject.userId || group.moderators.indexOf(paramObject.userId) > -1)
+            };
+            if (paramObject.needsOwner) {
+                if (group.owner != paramObject.userId) {
+                    authObject.isAuthorized = false;
+                }
+            }
+            finalAction(null, authObject);
+        }
+    });
+};
+
+exports.groupGetUserRole = function (paramObject, finalAction) {
+    Group.findOne({
+        _id: paramObject.groupId
+    }, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            var result = 0;
+            if (group.users.indexOf(paramObject.userId) > -1) {
+                result = 1;
+                if (group.moderators.indexOf(paramObject.userId) > -1) {
+                    result = 2;
+                }
+            } else if (group.owner == paramObject.userId) {
+                result = 3;
+            }
+            finalAction(null, result);
+        }
+    });
+};
+
+exports.listGroupJoinRequests = function (paramObject, finalAction) {
+    JoinRequest.find(paramObject, finalAction);
+};
+
+exports.demoteGroupMember = function (paramObject, finalAction) {
+    Group.findOne({
+        _id: paramObject.groupId
+    }, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            Account.findOne({
+                _id: paramObject.userId
+            }, function (err, user) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    var index = group.moderators.indexOf(paramObject.userId);
+                    if (index > -1) {
+                        group.moderators.splice(index, 1);
+                        group.save(finalAction);
+                    }
+                }
+            });
+        }
+    });
+};
+
+exports.promoteGroupMember = function (paramObject, finalAction) {
+    Group.findOne({
+        _id: paramObject.groupId
+    }, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            Account.findOne({
+                _id: paramObject.userId
+            }, function (err, user) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    if (group.moderators.indexOf(paramObject.userId) == -1 && group.owner != paramObject.userId) {
+                        group.moderators.push(paramObject.userId);
+                    }
+                    group.save(finalAction);
+                }
+            });
+        }
+    });
+};
+
+exports.getUserGroup = function (paramObject, finalAction) {
+    Group.findOne({
+        _id: paramObject.groupId
+    }, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            if (paramObject.isMods) {
+                Account.find({
+                    _id: {
+                        $in: group.moderators
+                    }
+                }, finalAction);
+            } else {
+                var resultArray = [];
+                for (var i = 0; i < group.users.length; i++) {
+                    if (group.moderators.indexOf(group.users[i]) == -1) {
+                        resultArray.push(group.users[i]);
+                    }
+                }
+                Account.find({
+                    _id: {
+                        $in: resultArray
+                    }
+                }, finalAction);
+            }
+        }
+    });
+};
+
+exports.groupGetAllUsers = function (paramObject, finalAction) {
+    var finalResult = {};
+    Group.findOne(paramObject, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            var result1 = [];
+            var resultArray = result1.concat(group.users);
+            Account.find({
+                _id: {
+                    $in: resultArray
+                }
+            }, function (err, users) {
+                if (err) {
+                    finalAction(err);
+                } else {
+                    finalResult.list = users;
+                    Account.findOne({
+                        _id: group.owner
+                    }, function (err, owner) {
+                        if (err) {
+                            finalAction(err);
+                        } else {
+                            finalResult.owner = owner;
+                            finalAction(null, finalResult);
+                        }
+                    });
+                }
+            });
+        }
+    });
+};
+
+exports.getGroupOwner = function (paramObject, finalAction) {
+    Group.findOne(paramObject, function (err, group) {
+        if (err) {
+            finalAction(err);
+        } else {
+            Account.findOne({
+                _id: group.owner
+            }, finalAction);
+        }
+    });
+};
+
 var requestExistsGate = function (paramObject, action) {
     Request.findOne(paramObject, action);
 };
@@ -146,15 +512,19 @@ exports.clearRequest = function (paramObject, finalAction) {
         sender: paramObject.sender,
         reciever: paramObject.reciever
     }, function (err, request) {
-        if(request){
+        if (request) {
             request.rejected = true;
             request.confirmed = false;
             request.save(finalAction);
-        }else{
+        } else {
             console.error(err);
         }
     });
-}
+};
+
+exports.getAllGroups = function (paramObject, finalAction) {
+    Group.find(paramObject, finalAction);
+};
 
 exports.addCheckedRequest = function (paramObject, finalAction) {
     requestExistsGate({

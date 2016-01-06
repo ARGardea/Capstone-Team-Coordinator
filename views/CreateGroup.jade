@@ -1,0 +1,15 @@
+extends BaseLayout
+
+block content
+    link(href='/styles/SendNote.css', rel='stylesheet')
+    div(class='main')
+        form(method='POST', action='/CreateGroup', class='groupForm')
+            div(class='nameInput')
+                label(for='name') Group Name:
+                input(name='name', id='name')
+                br
+            div(class='descriptionBox')
+                label(for='description') Description:
+                textarea(name='description', id='description', cols='300', rows='20')
+                    |Enter Your Description Here
+            input(type='submit', value='Create Group', class='submit')

@@ -1,0 +1,43 @@
+extends BaseLayout
+
+block content
+    link(href='/styles/ListContactRequests.css', rel='stylesheet')
+    div(class="main")
+        h2(class='groupHeader')
+            |User Management for #{group.name}
+        -if(typeof(message) != 'undefined'){
+        span(class='groupMessage')
+            |#{message}
+        -}
+        div(class='userList')
+            h3(class='ownerLabel') Owner:
+            div(class='ownerDiv')
+                    a(href='/Profile?username=#{owner.username}',target='_blank', class='userLink') #{owner.username}
+            div(class='moderatorDiv')
+                h3(class='modLabel') Moderators:
+                -if(mods.length > 0){
+                each mod in mods
+                    div(class='modDiv')
+                        a(href='/Profile?username=#{mod.username}', target='_blank', class='userLink') #{mod.username}
+                        -if(isOwner){
+                        a(href='/GroupDemoteUser?groupId=#{group._id}&userId=#{mod.id}', class='userLink') Demote
+                        a(href='/GroupRemoveUser?groupId=#{group._id}&userId=#{mod.id}', class='userLinke') Remove
+                        -}
+                -}else{
+                |None yet
+                -}
+            div(class='userDiv')
+                h3(class='userLabel') Members:
+                -if(userList.length > 0){
+                each user in userList
+                    div(class='memberDiv')
+                        a(href='/Profile?username=#{user.username}', target='_blank', class='userLink') #{user.username}
+                        -if(hasAuth){
+                        -if(isOwner){
+                        a(href='/GroupPromoteUser?groupId=#{group._id}&userId=#{user.id}', class='userLink') Promote
+                        -}
+                        a(href='/GroupRemoveUser?groupId=#{group._id}&userId=#{user.id}', class='userLink') Remove
+                        -}
+                -}else{
+                |None yet
+                -}

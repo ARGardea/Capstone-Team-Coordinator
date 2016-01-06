@@ -4,7 +4,11 @@ var mongoose = require('mongoose'),
 
 var GroupSchema = new Schema({
     name: String,
-    user: [ObjectId]
+    owner: ObjectId,
+    moderators: [ObjectId],
+    users: [ObjectId],
+    description: String,
+    announcements: [ObjectId]
 });
 
 exports.group = mongoose.model('Group', GroupSchema);

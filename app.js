@@ -118,6 +118,19 @@ app.get('/UserList', accessInterceptor, function (req, res) {
     });
 });
 
+app.get('/GroupList', accessInterceptor, function (req, res) {
+    persist.getAllGroups({}, function (err, docs) {
+        if (err) {
+            console.error(err);
+            res.locals.message = 'An error has occured.';
+            res.render('Error');
+        } else {
+            res.locals.groupList = docs;
+            res.render('GroupList');
+        }
+    });
+});
+
 app.get('/Profile', accessInterceptor, function (req, res) {
     persist.performUserAction(req.query.username, function (err, user) {
         if (user) {
@@ -174,6 +187,166 @@ app.get('/ViewNotes', accessInterceptor, function (req, res) {
                 res.locals.list = list;
                 res.render('ListMessages');
             });
+        }
+    });
+});
+
+app.get('/ViewGroup', accessInterceptor, function (req, res) {
+    var helpFunction = function (err) {
+        res.locals.message = 'An error occurred while trying to find this group: /n' + err;
+        res.render('Error');
+    };
+
+    var helpFunction2 = function (targList, targId) {
+        var resultArray = [];
+        var targInArray = false;
+        for (var i = 0; i < targList.length; i++) {
+            var trimmedUser = {
+                username: targList[i].username,
+                id: targList[i]._id
+            };
+            if (trimmedUser.id == targId) {
+                targInArray = true;
+            }
+            resultArray.push(trimmedUser);
+        }
+        var result = {
+            list: resultArray,
+            inGroup: targInArray
+        };
+        return result;
+    }
+
+    var userList = [],
+        modList = [],
+        userInGroup = false,
+        hasAuth = false,
+        isOwner = false,
+        owner;
+
+    persist.getGroup({
+        _id: req.query.groupId
+    }, function (err, group) {
+        if (err) {
+            console.error(err);
+            helpFunction(err);
+        } else {
+            persist.getUserGroup({
+                groupId: group._id,
+                isMods: false
+            }, function (err, normUsers) {
+                if (err) {
+                    helpFunction(err);
+                } else {
+                    var result1 = helpFunction2(normUsers, req.session.userID);
+                    userList = result1.list;
+                    if (result1.inGroup) {
+                        userInGroup = true;
+                    }
+                    persist.getUserGroup({
+                        groupId: group._id,
+                        isMods: true
+                    }, function (err, modUsers) {
+                        if (err) {
+                            helpFunction(err);
+                        } else {
+                            console.log(modUsers);
+                            var result2 = helpFunction2(modUsers, req.session.userID);
+                            modList = result2.list;
+                            if (result2.inGroup) {
+                                userInGroup = true;
+                                hasAuth = true;
+                            }
+                            persist.getGroupOwner({
+                                _id: group._id
+                            }, function (err, ownerUser) {
+                                if (err) {
+                                    helpFunction(err);
+                                } else {
+                                    owner = {
+                                        username: ownerUser.username,
+                                        id: ownerUser._id
+                                    };
+                                    if (owner.id == req.session.userID) {
+                                        userInGroup = true;
+                                        hasAuth = true;
+                                        isOwner = true;
+                                    }
+                                    console.log(userList);
+                                    res.locals.group = group;
+                                    res.locals.userList = userList;
+                                    res.locals.mods = modList;
+                                    res.locals.owner = owner;
+                                    res.locals.inGroup = userInGroup;
+                                    res.locals.hasAuth = hasAuth;
+                                    res.render('GroupProfile');
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    });
+});
+
+app.get('/UserJoinRequest', accessInterceptor, function (req, res) {
+    persist.makeJoinRequest({
+        groupId: req.query.groupId,
+        userId: req.session.userID,
+        fromGroup: false
+    }, function (err, request) {
+        if (err) {
+            console.error("Group Join Request Error: " + err);
+            res.locals.message = "An error occured while trying to send the join request.";
+            res.render('Error');
+        } else {
+            res.locals.message = "Your join request has been sent!";
+            res.render('Home');
+        }
+    });
+});
+
+app.get('/ConfirmJoinRequest', accessInterceptor, function (req, res) {
+    persist.confirmJoinRequest({
+        requestId: req.query.requestId,
+        username: req.session.username
+    }, function (err, request) {
+        if (err) {
+            console.error(err);
+            res.locals.message = 'An error occured while trying to accept the join request.';
+            res.render('Error');
+        } else {
+            persist.joinGroup({
+                groupId: request.group,
+                userId: request.member,
+                addModerator: request.moderator
+            }, function (err, group) {
+                if (err) {
+                    console.error(err);
+                    res.locals.message = 'An error occured while trying to accept the join request.';
+                    res.render('Error');
+                } else {
+                    res.locals.message = "Join Request successfully accepted!";
+                    res.render('Home');
+                }
+            });
+        }
+    });
+});
+
+app.get('/DenyJoinRequest', accessInterceptor, function (req, res) {
+    persist.denyJoinRequest({
+        requestId: req.query.requestId,
+        groupDenied: true
+    }, function(err, request){
+        if(err){
+            console.error(err);
+            res.locals.message = 'An error occured while trying to deny the join request.';
+            res.render('Error');
+        }else{
+            res.locals.message = 'Join Request successfully denied!';
+            res.render('Home');
         }
     });
 });
@@ -236,9 +409,9 @@ app.get('/ListNotifications', accessInterceptor, function (req, res) {
                             res.locals.list = notifications;
                             res.render('ListNotification');
                         }
-                    }else{
+                    } else {
                         res.locals.message = 'No Notifications were found.';
-                            res.render('ListNotification');
+                        res.render('ListNotification');
                     }
                 });
             };
@@ -250,6 +423,7 @@ app.get('/ListNotifications', accessInterceptor, function (req, res) {
         }
     });
 });
+
 
 app.get('/AddContact', accessInterceptor, function (req, res) {
     console.log(req.session.username);
@@ -273,6 +447,282 @@ app.get('/AddContact', accessInterceptor, function (req, res) {
         } else {
             res.locals.message = 'Error: user ' + req.query.targetUsername + ' not found.';
             res.render('Error');
+        }
+    });
+});
+
+app.get('/ManageUsers', accessInterceptor, function (req, res) {
+    if (req.session.message != 'undefined') {
+        res.locals.message = req.session.message;
+        delete req.session.message;
+    }
+    var helpFunction = function (err) {
+        res.locals.message = "An error occurred while trying to load the group's users";
+        res.render('Error');
+    };
+
+    var helpFunction2 = function (targList, targId) {
+        var resultArray = [];
+        var targInArray = false;
+        for (var i = 0; i < targList.length; i++) {
+            var trimmedUser = {
+                username: targList[i].username,
+                id: targList[i]._id
+            };
+            if (trimmedUser.id == targId) {
+                targInArray = true;
+            }
+            resultArray.push(trimmedUser);
+        }
+        var result = {
+            list: resultArray,
+            inGroup: targInArray
+        };
+        return result;
+    }
+
+    var userList = [],
+        modList = [],
+        userInGroup = false,
+        hasAuth = false,
+        isOwner = false,
+        owner;
+    
+    console.log('group id: ' + req.query.groupId);
+    var id = req.query.groupId;
+
+    persist.getGroup({
+        _id: req.query.groupId
+    }, function (err, group) {
+        if (err) {
+            console.error(err);
+            helpFunction(err);
+        } else {
+            persist.getUserGroup({
+                groupId: id,
+                isMods: false
+            }, function (err, normUsers) {
+                if (err) {
+                    helpFunction(err);
+                } else {
+                    var result1 = helpFunction2(normUsers);
+                    userList = result1.list;
+                    if (result1.inGroup) {
+                        userInGroup = true;
+                    }
+                    persist.getUserGroup({
+                        groupId: group._id,
+                        isMods: true
+                    }, function (err, modUsers) {
+                        if (err) {
+                            helpFunction(err);
+                        } else {
+                            var result2 = helpFunction2(modUsers);
+                            modList = result2.list;
+                            if (result2.inGroup) {
+                                userInGroup = true;
+                                hasAuth = true;
+                            }
+                            persist.getGroupOwner({
+                                _id: group._id
+                            }, function (err, ownerUser) {
+                                if (err) {
+                                    helpFunction(err);
+                                } else {
+                                    owner = {
+                                        username: ownerUser.username,
+                                        id: ownerUser._id
+                                    };
+                                    if (owner.id == req.session.userID) {
+                                        userInGroup = true;
+                                        hasAuth = true;
+                                        isOwner = true;
+                                    }
+                                    res.locals.group = group;
+                                    res.locals.userList = userList;
+                                    res.locals.mods = modList;
+                                    res.locals.owner = owner;
+                                    res.locals.inGroup = userInGroup;
+                                    res.locals.hasAuth = hasAuth;
+                                    res.locals.isOwner = isOwner;
+                                    res.render('ManageGroupMembers');
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    });
+});
+
+function groupManagementHelper(req, res, callback) {
+    persist.groupGetUserRole({
+        groupId: req.query.groupId,
+        userId: req.query.userId
+    }, function (err, result) {
+        if (err) {
+            callback(err);
+        } else {
+            if (result == 0) {
+                callback(null, false, "The group does not contain this user.");
+            } else if (result == 1 || result == 2) {
+                persist.verifyGroupAuthority({
+                    groupId: req.query.groupId,
+                    userId: req.session.userID,
+                    needsOwner: (result == 2)
+                }, function (err, authObject) {
+                    if (err) {
+                        callback(err);
+                    } else {
+                        if (authObject.isAuthorized) {
+                            callback(null, true);
+                        } else {
+                            callback(null, false, 'You are not authorized to make this change.');
+                        }
+                    }
+                });
+            } else if (result == 3) {
+                callback(null, false, "The group owner cannot be modified.");
+            }
+        }
+    });
+}
+
+app.get('/GroupPromoteUser', accessInterceptor, function (req, res) {
+    groupManagementHelper(req, res, function (err, result, message) {
+        if (err) {
+            console.error(err);
+            res.locals.message = 'An error has occured.';
+            res.render('Home');
+        } else {
+            if (result) {
+                persist.promoteGroupMember({
+                    groupId: req.query.groupId,
+                    userId: req.query.userId
+                }, function (err, group) {
+                    if (err) {
+                        console.error(err);
+                        res.locals.message = 'An error has occured.';
+                        res.render('Home');
+                    } else {
+                        req.session.message = 'User successfully promoted';
+                        res.redirect('/ManageUsers?groupId=' + req.query.groupId);
+                    }
+                });
+            } else {
+                req.session.message = message;
+                res.redirect('/ManageUsers?groupId=' + req.query.groupId);
+            }
+        }
+    });
+});
+
+app.get('/GroupDemoteUser', accessInterceptor, function (req, res) {
+    groupManagementHelper(req, res, function (err, result, message) {
+        if (err) {
+            console.error(err);
+            res.locals.message = 'An error has occured.';
+            res.render('Home');
+        } else {
+            if (result) {
+                persist.demoteGroupMember({
+                    groupId: req.query.groupId,
+                    userId: req.query.userId
+                }, function (err, group) {
+                    if (err) {
+                        console.error(err);
+                        res.locals.message = 'An error has occured.';
+                        res.render('Home');
+                    } else {
+                        req.session.message = 'User successfully demoted';
+                        res.redirect('/ManageUsers?groupId=' + req.query.groupId);
+                    }
+                });
+            } else {
+                req.session.message = message;
+                res.redirect('/ManageUsers?groupId=' + req.query.groupId);
+            }
+        }
+    });
+});
+
+app.get('/GroupRemoveUser', accessInterceptor, function (req, res) {
+    groupManagementHelper(req, res, function (err, result, message) {
+        if (err) {
+            console.error(err);
+            res.locals.message = 'An error has occured.';
+            res.render('Home');
+        } else {
+            if (result) {
+                persist.removeGroupMember({
+                    groupId: req.query.groupId,
+                    userId: req.query.userId
+                }, function (err, group) {
+                    if (err) {
+                        console.error(err);
+                        res.locals.message = 'An error has occured.';
+                        res.render('Home');
+                    } else {
+                        req.session.message = 'User successfully removed';
+                        res.redirect('/ManageUsers?groupId=' + req.query.groupId);
+                    }
+                });
+            } else {
+                req.session.message = message;
+                res.redirect('/ManageUsers?groupId=' + req.query.groupId);
+            }
+        }
+    });
+});
+
+app.get('/NoteGroup', accessInterceptor, function (req, res) {
+    res.locals.groupId = req.query.groupId;
+    persist.getGroup({
+        _id: req.query.groupId
+    }, function (err, group) {
+        if (err) {
+            console.error(err);
+            res.locals.message = "An error ocurred while trying to find the group profile.";
+            res.render('Error');
+        } else {
+            res.locals.groupName = group.name;
+            res.render('NoteGroup.jade');
+        }
+    });
+});
+
+app.get('/ViewGroupJoinRequests', accessInterceptor, function (req, res) {
+    persist.verifyGroupAuthority({
+        groupId: req.query.groupId,
+        userId: req.session.userID
+    }, function (err, authObject) {
+        if (err) {
+            console.error('Group Join Requests View Error: ' + err);
+            res.locals.message = 'There was an error while trying to view group join request.';
+            res.render('Error');
+        } else {
+            if (authObject.isAuthorized) {
+                persist.listGroupJoinRequests({
+                    group: req.query.groupId,
+                    denied: false,
+                    $where: "this.groupConfirmed != this.memberConfirmed"
+                }, function (err, docs) {
+                    if (err) {
+                        console.error(err);
+                        res.locals.message = 'There was an error while trying to view group join requests';
+                        res.render('Error');
+                    } else {
+                        console.log(docs);
+                        res.locals.list = docs;
+                        res.locals.groupname = authObject.groupname;
+                        res.render('GroupJoinRequests');
+                    }
+                });
+            } else {
+                res.locals.message = 'You are not authorized to view this page.';
+                res.render('Error');
+            }
         }
     });
 });
@@ -359,6 +809,10 @@ app.get('/ListContactRequests', accessInterceptor, function (req, res) {
         });
 });
 
+app.get('/CreateGroup', accessInterceptor, function (req, res) {
+    res.render('CreateGroup');
+});
+
 app.get('/:viewname', superInterceptor, function (req, res) {
     res.locals.message = 'Error: No route for this path.';
     res.render('Error');
@@ -408,6 +862,42 @@ app.post('/EditProfile', accessInterceptor, function (req, res) {
     });
 });
 
+app.post('/NoteGroup', accessInterceptor, function (req, res) {
+    persist.groupGetAllUsers({
+        _id: req.body.reciever
+    }, function (err, result) {
+        console.log(result);
+        for (var i = 0; i < result.list.length; i++) {
+            sendNote({
+                sender: req.session.username,
+                reciever: result.list[i].username,
+                message: {
+                    subject: 'Group Messaage (' + req.body.groupName + ') : ' + req.body.subject,
+                    text: req.body.message
+                }
+            }, function (err, message) {
+                if (err) {
+                    console.error(err);
+                }
+            });
+        }
+        sendNote({
+            sender: req.session.username,
+            reciever: result.owner.username,
+            message: {
+                subject: 'Group Message (' + req.body.groupName + ') : ' + req.body.subject,
+                text: req.body.message
+            }
+        }, function (err, message) {
+            if (err) {
+                console.error(err);
+            }
+        });
+        res.locals.message = 'Group Message to ' + req.body.groupName + ' sent!';
+        res.render('Home');
+    });
+});
+
 app.post('/CreateNotification', accessInterceptor, function (req, res) {
     persist.performUserAction(req.session.username, function (err, user) {
         if (user) {
@@ -417,6 +907,24 @@ app.post('/CreateNotification', accessInterceptor, function (req, res) {
         } else {
             res.locals.message = "An unknown error has occured.";
             res.render('Error');
+        }
+    });
+});
+
+app.post('/CreateGroup', accessInterceptor, function (req, res) {
+    var paramObject = {
+        name: req.body.name,
+        description: req.body.description,
+        owner: req.session.userID
+    };
+
+    persist.addGroup(paramObject, function (err, user) {
+        if (err) {
+            Console.error(err);
+            res.locals.message("An error ocurred while trying to create your group.");
+            res.render('Error');
+        } else {
+            res.render('Home');
         }
     });
 });

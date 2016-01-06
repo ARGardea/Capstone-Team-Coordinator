@@ -36,3 +36,13 @@ block content
                         |#{user.username} has not yet set their description.
                     -}
                     br
+                div(class='groupsDiv')
+                    h3(class='groupsHeader') Member of:
+                    -if(user.groups.length > 0){
+                        each item in user.groups
+                            a(href='/ViewGroup?groupId=#{item}', class='groupLink') Group #{item}
+                            br
+                    -}else{
+                        |No groups yet!
+                    -}
+                    

@@ -9,12 +9,14 @@ div.headerDiv {
 }
 
 div.headerDiv span.username,
-div.headerDiv span.links {
+div.headerDiv span.links,
+div.headerDiv span.groupname {
     display: inline-block;
     width: 50%;
 }
 
-span.username {
+span.username,
+span.groupname {
     font-size: 20pt;
 }
 
@@ -34,7 +36,7 @@ span.links a {
 
 span.links a:hover {
     background-color: #BCAD9E;
-/*    background-color: #AA9D8D;*/
+    /*    background-color: #AA9D8D;*/
 }
 
 div.profMain {

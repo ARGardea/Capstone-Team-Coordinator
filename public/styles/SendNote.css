@@ -3,7 +3,7 @@ label {
     font-size: 16pt;
 }
 
-div.recieverName, div.recievername label {
+div.recieverName, div.recievername label, div.nameInput {
     font-size: 18pt;
 }
 
@@ -13,7 +13,7 @@ div.recieverName, div.subjectLine, div.messageBox {
     margin-right: auto;
 }
 
-div.recieverName label, div.subjectLine label, div.messageBox label {
+div.recieverName label, div.subjectLine label, div.messageBox label, div.nameInput label, div.descriptionBox label {
     display: block;
     max-width: 90%;
     margin: 0px;
@@ -25,7 +25,7 @@ div.recieverName label {
 }
 
 
-div.subjectLine input {
+div.subjectLine input, div.nameInput input {
     display: block;
 }
 
@@ -33,7 +33,7 @@ div.sendToPhone {
     text-align: center;
 }
 
-div.messageBox label, div.loginWrapper label, div.message label, div.date label, div.subjectLine label {
+div.messageBox label, div.loginWrapper label, div.message label, div.date label, div.subjectLine label, div.nameInput label, div.descriptionBox label {
     color: #E1D1BD;
     font-size: 18pt;
     background-color: #5E5852;
@@ -47,8 +47,12 @@ div.messageBox label, div.loginWrapper label, div.message label, div.date label,
     display: block;
 }
 
+div.nameInput input {
+    max-width: 100%;
+    min-width: 50%;
+}
 
-div.date input, div.subjectLine input {
+div.date input, div.subjectLine input, div.nameInput input {
     border-radius: 5px;
     border-top-left-radius: 0px;
 }
@@ -71,7 +75,7 @@ div.loginWrapper input {
     font-size: 16pt;
 }
 
-div.subjectLine input {
+div.subjectLine input, div.nameInput input {
     border: 2px solid #5E5852;
     font-size: 14pt;
 }
@@ -106,7 +110,7 @@ input.password, input.username {
     border-bottom-right-radius: 10px;
 }
 
-div.messageBox textarea, div.message input {
+div.messageBox textarea, div.message input, div.descriptionBox textarea {
     width: 100%;
     resize: none;
     background-color: #EFE9E1;
@@ -130,7 +134,7 @@ div.phoneWrapper input {
     border-bottom-right-radius: 10px;
 }
 
-form.noteForm, div.loginWrapper, form.notification {
+form.noteForm, div.loginWrapper, form.notification, form.groupForm {
     border-radius: 5px;
     max-width: 90%;
     margin-left: auto;

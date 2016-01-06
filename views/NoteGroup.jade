@@ -1,0 +1,30 @@
+extends BaseLayout
+
+block content
+    link(href='/styles/SendNote.css', rel='stylesheet')
+    div(class='main')
+        form(method='POST', action='/NoteGroup', class='noteForm')
+            div(class='recieverName')
+                label(for='reciever') Note to:
+                | #{groupName}
+                input(name='reciever', type='hidden', value='#{groupId}')
+                input(name='groupName', type='hidden', value='#{groupName}')
+                br
+            div(class='subjectLine')
+                label(for='subject') Subject:
+                -if(typeof(subject) !== 'undefined'){
+                input(name='subject', id='subject', value='#{subject}')
+                -}else{
+                input(name='subject', id='subject')
+                -}
+                br
+            div(class='messageBox')
+                label(for='message') Message:
+                textarea(name='message', id='message', cols='300', rows='20')
+                    -if(typeof(message) !== 'undefined'){
+                    |#{message}
+                    -}else{
+                    |Enter your message here
+                    -}
+                br
+            input(type='submit', value='Send Note', class='submit')
