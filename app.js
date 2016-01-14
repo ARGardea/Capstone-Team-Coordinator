@@ -1022,9 +1022,12 @@ app.post('/twilio', superInterceptor, function (req, res) {
                 var regexString2 = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo] [Gg][Rr][Oo][Uu][Pp]:[ ]*([a-zA-Z \d]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/?\s\n]*)/g;
                 if (regexString2.test(message.message)) {
                     console.log('It matched for group!');
+                    regexString2.lastIndex = 0;
                     //console.log(regexString2);
-                    console.log(message.message);
+                    //console.log(message.message);
                     var match = regexString2.exec(message.message);
+//                    console.log('first:' + match);
+//                    console.log(regexString2.exec(message.message));
                     persist.performUserAction(match[1], function (err, user) {
                         if (err) {
                             console.error(err);
