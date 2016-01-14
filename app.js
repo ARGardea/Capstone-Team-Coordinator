@@ -1050,7 +1050,7 @@ app.post('/twilio', superInterceptor, function (req, res) {
                                                     console.log(result);
                                                     var userList = result.list;
                                                     userList.push(result.owner);
-                                                    noteGroupSubHelper(match[1], userList, 'SMS Group Message (' + req.body.groupName + ')', match[3]);
+                                                    noteGroupSubHelper(match[1], userList, 'SMS Group Message (' + match[2] + ')', match[3]);
                                                 }
                                             });
                                         } else {
