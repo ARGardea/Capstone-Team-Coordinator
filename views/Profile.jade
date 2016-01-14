@@ -38,9 +38,9 @@ block content
                     br
                 div(class='groupsDiv')
                     h3(class='groupsHeader') Member of:
-                    -if(user.groups.length > 0){
-                        each item in user.groups
-                            a(href='/ViewGroup?groupId=#{item}', class='groupLink') Group #{item}
+                    -if(groupList.length > 0){
+                        each item in groupList
+                            a(href='/ViewGroup?groupId=#{item.id}', class='groupLink') #{item.name}
                             br
                     -}else{
                         |No groups yet!

@@ -138,6 +138,10 @@ exports.getGroup = function (paramObject, finalAction) {
     Group.findOne(paramObject, finalAction);
 };
 
+exports.getGroupList = function (paramObject, finalAction) {
+    Group.find(paramObject, finalAction);
+};
+
 exports.addGroup = function (paramObject, finalAction) {
     var newGroup = new Group({
         name: paramObject.name,

@@ -134,8 +134,28 @@ app.get('/GroupList', accessInterceptor, function (req, res) {
 app.get('/Profile', accessInterceptor, function (req, res) {
     persist.performUserAction(req.query.username, function (err, user) {
         if (user) {
-            res.locals.user = user.toObject();
-            res.render('Profile');
+            persist.getGroupList({
+                _id: {
+                    $in: user.groups
+                }
+            }, function (err, docs) {
+                if (err) {
+                    console.error(err);
+                    res.locals.message = 'An error occured while trying to load this profile.';
+                    res.render('error');
+                } else {
+                    var nameIdList = [];
+                    for (var i = 0; i < docs.length; i++) {
+                        nameIdList.push({
+                            name: docs[i].name,
+                            id: docs[i]._id
+                        });
+                    }
+                    res.locals.groupList = nameIdList;
+                    res.locals.user = user.toObject();
+                    res.render('Profile');
+                }
+            });
         } else {
             res.locals.message = req.query.username + " was not found.";
             res.render('Home');
@@ -339,12 +359,12 @@ app.get('/DenyJoinRequest', accessInterceptor, function (req, res) {
     persist.denyJoinRequest({
         requestId: req.query.requestId,
         groupDenied: true
-    }, function(err, request){
-        if(err){
+    }, function (err, request) {
+        if (err) {
             console.error(err);
             res.locals.message = 'An error occured while trying to deny the join request.';
             res.render('Error');
-        }else{
+        } else {
             res.locals.message = 'Join Request successfully denied!';
             res.render('Home');
         }
@@ -487,7 +507,7 @@ app.get('/ManageUsers', accessInterceptor, function (req, res) {
         hasAuth = false,
         isOwner = false,
         owner;
-    
+
     console.log('group id: ' + req.query.groupId);
     var id = req.query.groupId;
 
@@ -862,37 +882,41 @@ app.post('/EditProfile', accessInterceptor, function (req, res) {
     });
 });
 
-app.post('/NoteGroup', accessInterceptor, function (req, res) {
-    persist.groupGetAllUsers({
-        _id: req.body.reciever
-    }, function (err, result) {
-        console.log(result);
-        for (var i = 0; i < result.list.length; i++) {
-            sendNote({
-                sender: req.session.username,
-                reciever: result.list[i].username,
-                message: {
-                    subject: 'Group Messaage (' + req.body.groupName + ') : ' + req.body.subject,
-                    text: req.body.message
-                }
-            }, function (err, message) {
-                if (err) {
-                    console.error(err);
-                }
-            });
-        }
+function noteGroupSubHelper(sender, userList, subject, message) {
+    for (var i = 0; i < userList.length; i++) {
         sendNote({
-            sender: req.session.username,
-            reciever: result.owner.username,
+            sender: sender,
+            reciever: userList[i].username,
             message: {
-                subject: 'Group Message (' + req.body.groupName + ') : ' + req.body.subject,
-                text: req.body.message
+                subject: subject,
+                text: message
             }
-        }, function (err, message) {
+        }, function (err, varMessage) {
             if (err) {
                 console.error(err);
             }
         });
+    }
+}
+
+function noteGroupHelper(req, callback) {
+    persist.groupGetAllUsers({
+        _id: req.body.reciever
+    }, function (err, result) {
+        if (err) {
+            console.error();
+        } else {
+            console.log(result);
+            var userList = result.list;
+            userList.push(result.owner);
+            noteGroupSubHelper(req.session.username, userList, 'Group Message (' + req.body.groupName + ') : ' + req.body.subject, req.body.message);
+            callback();
+        }
+    });
+}
+
+app.post('/NoteGroup', accessInterceptor, function (req, res) {
+    noteGroupHelper(req, function () {
         res.locals.message = 'Group Message to ' + req.body.groupName + ' sent!';
         res.render('Home');
     });
@@ -994,44 +1018,98 @@ app.post('/twilio', superInterceptor, function (req, res) {
                 console.error(err);
             } else {
                 console.log(message._id + ' was saved to the database!');
-                var regexString = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo]:[ ]*([a-zA-Z]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/? \n]*)/g;
-                var match = regexString.exec(message.message);
-                persist.performUserAction(match[1], function (err, user) {
-                    if (err) {
-                        console.error(err);
-                    } else if (user) {
-                        var numberString = parseInt(req.body.From);
-                        if (numberString == user.phoneNumber) {
-                            sendNote({
-                                sender: user.username,
-                                reciever: match[2],
-                                message: {
-                                    subject: 'SMS Message',
-                                    text: match[3]
-                                }
-                            }, function (err, smsMessage) {
-                                if (err) {
-                                    console.error(err);
-                                }
-                            });
+                var regexString = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo]:[ ]*([a-zA-Z \d]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/?\s\n]*)/g;
+                var regexString2 = /[Mm][Ee][Ss][Ss][Aa][Gg][eE]:[\n+]*[fF][rR][oO][mM]:[ ]*([a-zA-Z]*)[\n+]*[tT][Oo] [Gg][Rr][Oo][Uu][Pp]:[ ]*([a-zA-Z \d]*)[\n+]*[Bb][Oo][Dd][Yy]:[ ]*([a-zA-Z~`!@#$%^&*\(\)\-\_\=\+\\;:'",<.>/?\s\n]*)/g;
+                if (regexString2.test(message.message)) {
+                    console.log('It matched for group!');
+                    var match = regexString2.exec(message.message);
+                    persist.performUserAction(match[1], function (err, user) {
+                        if (err) {
+                            console.error(err);
+                        } else if (user) {
+                            var numberString = parseInt(req.body.From);
+                            if (numberString == user.phoneNumber) {
+                                persist.getGroup({
+                                    name: match[2]
+                                }, function (err, group) {
+                                    if (err) {
+                                        console.error(err);
+                                    } else if (group) {
+                                        if (user.groups.indexOf(group._id) > -1) {
+                                            persist.groupGetAllUsers({
+                                                _id: group._id
+                                            }, function (err, result) {
+                                                if (err) {
+                                                    console.error();
+                                                } else {
+                                                    console.log(result);
+                                                    var userList = result.list;
+                                                    userList.push(result.owner);
+                                                    noteGroupSubHelper(match[1], userList, 'SMS Group Message (' + req.body.groupName + ')', match[3]);
+                                                }
+                                            });
+                                        } else {
+                                            var returnMessage = 'You are not a member of the group "' + match[2] + '"';
+                                            phone.sendMessage(message.phoneNumber, returnMessage, function () {});
+                                        }
+                                    } else {
+                                        var returnMessage = 'The group "' + match[2] + '" could not be found.';
+                                        phone.sendMessage(message.phoneNumber, returnMessage, function () {});
+                                    }
+                                });
+
+
+                                //                                sendNote({
+                                //                                    sender: user.username,
+                                //                                    reciever: match[2],
+                                //                                    message: {
+                                //                                        subject: 'SMS Message',
+                                //                                        text: match[3]
+                                //                                    }
+                                //                                }, function (err, smsMessage) {
+                                //                                    if (err) {
+                                //                                        console.error(err);
+                                //                                    }
+                                //                                });
+                            } else {
+                                var returnMessage = "Your number (" + numberString + ") doesn't match the user " + user.username;
+                                phone.sendMessage(message.phoneNumber, returnMessage, function () {});
+                            }
                         } else {
-                            var returnMessage = "Your number (" + numberString + ") doesn't match the user " + user.username;
+                            var returnMessage = "The user " + match[1] + " could not be found!";
                             phone.sendMessage(message.phoneNumber, returnMessage, function () {});
                         }
-                        //                        sendNote({
-                        //                            sender: req.session.username,
-                        //                            reciever: req.body.reciever,
-                        //                            message: {
-                        //                                subject: req.body.subject,
-                        //                                text: req.body.text
-                        //                            }
-                        //                        }, function (err, message) {
-                        //                        });
-                    } else {
-                        var returnMessage = "The user " + match[1] + " could not be found!";
-                        phone.sendMessage(message.phoneNumber, returnMessage, function () {});
-                    }
-                });
+                    })
+                } else {
+                    var match = regexString.exec(message.message);
+                    persist.performUserAction(match[1], function (err, user) {
+                        if (err) {
+                            console.error(err);
+                        } else if (user) {
+                            var numberString = parseInt(req.body.From);
+                            if (numberString == user.phoneNumber) {
+                                sendNote({
+                                    sender: user.username,
+                                    reciever: match[2],
+                                    message: {
+                                        subject: 'SMS Message',
+                                        text: match[3]
+                                    }
+                                }, function (err, smsMessage) {
+                                    if (err) {
+                                        console.error(err);
+                                    }
+                                });
+                            } else {
+                                var returnMessage = "Your number (" + numberString + ") doesn't match the user " + user.username;
+                                phone.sendMessage(message.phoneNumber, returnMessage, function () {});
+                            }
+                        } else {
+                            var returnMessage = "The user " + match[1] + " could not be found!";
+                            phone.sendMessage(message.phoneNumber, returnMessage, function () {});
+                        }
+                    });
+                }
             }
         });
     });
