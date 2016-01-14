@@ -20,13 +20,13 @@ exports.getAuthorizer = function () {
                 } else {
                     console.log('Account registered: ' + username);
                     persist.addUser(username, password, email, phoneNumber, role);
-//                    phoneMod.sendMessage(phoneNumber, 'An account at teamcoord has been registered with your phone number, with the username \'' + username + '\'', function (error, message) {
-//                        if (error) {
-//                            console.error(error);
-//                        } else {
-//                            console.log('Sent! id: ' + message.sid);
-//                        }
-//                    });
+                    phoneMod.sendMessage(phoneNumber, 'An account at teamcoord has been registered with your phone number, with the username \'' + username + '\'', function (error, message) {
+                        if (error) {
+                            console.error(error);
+                        } else {
+                            console.log('Sent! id: ' + message.sid);
+                        }
+                        });
                 }
             });
         },
